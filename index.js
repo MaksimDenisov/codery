@@ -1,5 +1,8 @@
 const http = require('http');
 let counter = 0;
+const titleMainPage = "Main Page";
+const counterLink = '<a href="/counter">Счетчик</a>';
+const resetLink = '<a href="/reset">Сброс</a>';
 
 function handler(req, res) {
     const URL = require("url");
@@ -23,7 +26,7 @@ function handler(req, res) {
 
 function serveIndex(req, res) {
     counter++;
-    sendResponse(200, "Main Page", res);
+    sendResponse(200, titleMainPage + "<br>" + counterLink + "<br>" + resetLink, res);
 }
 
 function serveCounter(req, res) {
@@ -41,7 +44,7 @@ function serveNotFound(req, res) {
 
 function sendResponse(code, body, res) {
     res.statusCode = code;
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.write(body);
     res.end();
 }
