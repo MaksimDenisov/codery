@@ -1,7 +1,6 @@
 const http = require('http');
 let counter = 0;
 
-
 function handler(req, res) {
     const URL = require("url");
     const parsedURL = URL.parse(req.url);
@@ -23,35 +22,29 @@ function handler(req, res) {
 }
 
 function serveIndex(req, res) {
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "text/plain");
     counter++;
-    res.write("Main Page");
-    res.end();
+    sendResponse(200, "Main Page", res);
 }
 
 function serveCounter(req, res) {
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "text/plain");
-    res.write(counter.toString());
-    res.end();
+    sendResponse(200, counter.toString(), res);
 }
 
 function serveReset(req, res) {
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "text/plain");
     counter = 0;
-    res.write("Счетчик сброшен");
-    res.end();
+    sendResponse(200, "Счетчик сброшен", res);
 }
 
 function serveNotFound(req, res) {
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "text/plain");
-    res.write("Not found");
-    res.end();
+    sendResponse(404, "Not found", res);
 }
 
+function sendResponse(code, body, res) {
+    res.statusCode = code;
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.write(body);
+    res.end();
+}
 
 const server = http.createServer(handler);
 console.log("Server start");
