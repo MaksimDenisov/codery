@@ -1,8 +1,20 @@
 const http = require('http');
+const util = require('util');
+
+const conf = {
+    PORT: 3000
+};
+
+const route = {
+    BASE: "/",
+    COUNTER: "/counter",
+    RESET: "/reset"
+};
+
 let counter = 0;
 const titleMainPage = "Main Page";
-const counterLink = '<a href="/counter">Счетчик</a>';
-const resetLink = '<a href="/reset">Сброс</a>';
+const counterLink = getLink(route.COUNTER, "Счетчик");
+const resetLink = getLink(route.RESET, "Сброс");
 
 function handler(req, res) {
     const URL = require("url");
@@ -10,13 +22,13 @@ function handler(req, res) {
     console.log(parsedURL);
     console.log("Path", parsedURL.pathname);
     switch (parsedURL.pathname) {
-        case "/":
+        case route.BASE:
             serveIndex(req, res);
             break;
-        case "/counter":
+        case route.COUNTER:
             serveCounter(req, res);
             break;
-        case "/reset":
+        case route.RESET:
             serveReset(req, res);
             break;
         default:
@@ -49,6 +61,10 @@ function sendResponse(code, body, res) {
     res.end();
 }
 
+function getLink(href, text) {
+    return util.format('<a href="%s">%s</a>', href, text)
+}
+
 const server = http.createServer(handler);
 console.log("Server start");
-server.listen(3000);
+server.listen(conf.PORT);
