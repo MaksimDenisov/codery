@@ -19,39 +19,46 @@ function handler(req, res) {
     const parsedURL = URL.parse(req.url);
     console.log(parsedURL);
     console.log("Path", parsedURL.pathname);
-    switch (parsedURL.pathname) {
-        case route.BASE:
-            serveIndex(req, res);
-            break;
-        case route.COUNTER:
-            serveCounter(req, res);
-            break;
-        case route.RESET:
-            serveReset(req, res);
-            break;
-        default:
-            serveOther(req, res);
+    try {
+        switch (parsedURL.pathname) {
+            case route.BASE:
+                serveIndex(req, res);
+                break;
+            case route.COUNTER:
+                serveCounter(req, res);
+                break;
+            case route.RESET:
+                serveReset(req, res);
+                break;
+            default:
+                serveOther(req, res);
+        }
+    } catch (err) {
+        serveInternalError(req, res);
     }
 }
 
 function serveOther(req, res, customFileName) {
-    const filename = customFileName ? customFileName : path.basename(req.url);
-    const extension = path.extname(filename);
-    let type;
-    switch (extension) {
-        case ".css":
-            type = "text/css";
-        case ".js":
-            type = "text/javascript";
-        case ".png":
-            type = "image/png";
-        case ".html":
-        case ".htm":
-            type = "text/html";
-            sendStatic(type, filename, res);
-            break;
-        default:
-            serveNotFound(req, res);
+    const filename = "static/" + (customFileName ? customFileName : path.basename(req.url));
+    if (fs.existsSync(filename)) {
+        const extension = path.extname(filename);
+        let type;
+        switch (extension) {
+            case ".css":
+                type = "text/css";
+            case ".js":
+                type = "text/javascript";
+            case ".png":
+                type = "image/png";
+            case ".html":
+            case ".htm":
+                type = "text/html";
+            default:
+                type = -"text/plain";
+        }
+        sendStatic(type, filename, res);
+    } else {
+        serveNotFound(req, res);
     }
 }
 
@@ -73,18 +80,14 @@ function serveNotFound(req, res) {
     sendResponse(404, "Not found", res);
 }
 
+function serveInternalError(req, res) {
+    sendResponse(500, "Internal Server Error", res);
+}
+
 function sendStatic(type, filename, res) {
-    let content;
-    try {
-        content = fs.readFileSync("static/" + filename);
-        res.statusCode = 200;
-        res.setHeader("Content-Type", type);
-        res.write(content);
-        res.end();
-    } catch (err) {
-        res.statusCode = 404;
-        res.end();
-    }
+    const fileStream = fs.createReadStream(filename);
+    res.setHeader("Content-Type", type);
+    fileStream.pipe(res);
 }
 
 function sendResponse(code, body, res) {
