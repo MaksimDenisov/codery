@@ -9,7 +9,8 @@ const conf = {
 const route = {
     BASE: "/",
     COUNTER: "/counter",
-    RESET: "/reset"
+    RESET: "/reset",
+    PRODUCT: "/product"
 };
 
 let counter = 0;
@@ -29,6 +30,9 @@ function handler(req, res) {
                 break;
             case route.RESET:
                 serveReset(req, res);
+                break;
+            case route.PRODUCT:
+                serveProduct(req, res);
                 break;
             default:
                 serveOther(req, res);
@@ -60,6 +64,10 @@ function serveOther(req, res, customFileName) {
     } else {
         serveNotFound(req, res);
     }
+}
+
+function serveProduct(req, res) {
+    serveOther(req, res, "product.html");
 }
 
 function serveIndex(req, res) {
