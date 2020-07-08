@@ -3,7 +3,6 @@
 
 <head>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <!--  <link rel="stylesheet" href="1.2/footer.1.2">-->
     <meta charset="UTF-8">
     <meta name="theme-color" content="#fafafa">
 </head>
@@ -22,32 +21,23 @@
 </header>
 <main>
     <div class="row mt-3">
-        <div class="col-5 offset-1 col-sm-4 offset-sm-2 mt-3">
-            <div class="card" onclick='document.location.href ="/product";'>
-                <div class="col-8 offset-2">
-                    <img class="card-img-top" style="cursor:pointer" src="/product1.png" alt="Card image cap">
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title"> ПВУ Turkov ZENIT 350 HECO</h5>
-                    <p class="card-text">Вентиляционная установка с рекуперацией тепла и влаги ...</p>
-                    <p class="card-text">Цена: <b>10000 руб.</b></p>
-                    <a href="#" class="btn btn-primary">Купить</a>
-                </div>
-            </div>
-        </div>
+        <div class="col-1 col-sm-2"></div>
+        <% for (let i = 0; i < products.length; i++) { %>
+        <% let product = products[i]; %>
         <div class="col-5 col-sm-4 mt-3">
-            <div class="card" onclick='document.location.href ="/product";'>
+            <div class="card" onclick='document.location.href ="/product/<%= product.key %>-<%= product.slug %>" ;'>
                 <div class="col-8 offset-2">
-                    <img class="card-img-top" style="cursor:pointer" src="/product2.png" alt="Card image cap">
+                    <img class="card-img-top" style="cursor:pointer" src="<%= product.img %>" alt="Card image cap">
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title"> ПВУ Turkov ZENIT 350 HECO исп. 2</h5>
-                    <p class="card-text">Вентиляционная установка с рекуперацией тепла и влаги ...</p>
-                    <p class="card-text">Цена: <b>15000 руб.</b></p>
+                    <h5 class="card-title"><%= product.title %></h5>
+                    <p class="card-text"><%= product.description %></p>
+                    <p class="card-text">Цена: <b><%= product.price %> руб.</b></p>
                     <a href="#" class="btn btn-primary">Купить</a>
                 </div>
             </div>
         </div>
+        <% } %>
     </div>
 </main>
 <footer class="row footer fixed-bottom bg-dark">

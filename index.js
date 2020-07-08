@@ -1,6 +1,10 @@
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
+const ejs = require('ejs');
+const URL = require("url");
+
+const ProductService = require("./ProductService");
 
 const conf = {
     PORT: 3000
@@ -16,7 +20,6 @@ const route = {
 let counter = 0;
 
 function handler(req, res) {
-    const URL = require("url");
     const parsedURL = URL.parse(req.url);
     console.log(parsedURL);
     console.log("Path", parsedURL.pathname);
@@ -35,7 +38,11 @@ function handler(req, res) {
                 serveProduct(req, res);
                 break;
             default:
-                serveOther(req, res);
+                if (parsedURL.pathname.indexOf("/product/") === 0) {
+                    serveProduct(req, res);
+                } else {
+                    serveOther(req, res);
+                }
         }
     } catch (err) {
         serveInternalError(req, res);
@@ -71,17 +78,46 @@ function serveOther(req, res, customFileName) {
 }
 
 function serveProduct(req, res) {
-    serveOther(req, res, "product.html");
+    const parsedURL = URL.parse(req.url);
+    const a = parsedURL.path.replace("/product/", "").split("-");
+    const product = ProductService.getProductByKey(a[0]);
+    const scope = {
+        product: product
+    };
+    if (product) {
+        processEJS(res, "static/product.html", scope);
+    } else {
+        serveNotFound(req, res);
+    }
 }
 
 function serveIndex(req, res) {
     counter++;
-    serveOther(req, res, "index.html");
+    const products = ProductService.getProducts();
+    const scope = {
+        products: products
+    };
+    processEJS(res, "static/index.html", scope);
+}
+
+function processEJS(res, filename, scope) {
+    fs.readFile(filename, 'utf-8', function (err, data) {
+        if (!err) {
+            const template = ejs.compile(data.toString());
+            const html = template(scope);
+            res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
+            res.write(html);
+            res.end()
+        } else {
+            console.log(err);
+        }
+    });
 }
 
 function serveCounter(req, res) {
     sendResponse(200, counter.toString(), res);
 }
+
 
 function serveReset(req, res) {
     counter = 0;
@@ -93,7 +129,9 @@ function serveNotFound(req, res) {
 }
 
 function serveInternalError(req, res) {
-    sendResponse(500, "Internal Server Error", res);
+    res.statusCode = 500;
+    res.write("Server Internal Error");
+    res.end();
 }
 
 function sendStatic(type, filename, res) {
@@ -111,4 +149,5 @@ function sendResponse(code, body, res) {
 
 const server = http.createServer(handler);
 console.log("Server start");
+ProductService.init();
 server.listen(conf.PORT);
