@@ -80,24 +80,28 @@ function serveOther(req, res, customFileName) {
 function serveProduct(req, res) {
     const parsedURL = URL.parse(req.url);
     const a = parsedURL.path.replace("/product/", "").split("-");
-    const product = ProductService.getProductByKey(a[0]);
-    const scope = {
-        product: product
-    };
-    if (product) {
-        processEJS(res, "static/product.html", scope);
-    } else {
-        serveNotFound(req, res);
-    }
+    ProductService.getProductByKey(a[0]).then(function (result) {
+        if (result) {
+            const scope = {
+                product: result
+            };
+            processEJS(res, "static/product.html", scope);
+        } else {
+            serveNotFound(req, res);
+
+        }
+    });
 }
 
 function serveIndex(req, res) {
     counter++;
-    const products = ProductService.getProducts();
-    const scope = {
-        products: products
-    };
-    processEJS(res, "static/index.html", scope);
+    ProductService.getProducts().then(function (result) {
+        const scope = {
+            products: result
+        };
+        processEJS(res, "static/index.html", scope);
+    });
+
 }
 
 function processEJS(res, filename, scope) {
