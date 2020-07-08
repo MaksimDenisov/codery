@@ -50,13 +50,17 @@ function serveOther(req, res, customFileName) {
         switch (extension) {
             case ".css":
                 type = "text/css";
+                break;
             case ".js":
                 type = "text/javascript";
+                break;
             case ".png":
                 type = "image/png";
+                break;
             case ".html":
             case ".htm":
                 type = "text/html";
+                break;
             default:
                 type = -"text/plain";
         }
