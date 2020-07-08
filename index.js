@@ -87,8 +87,7 @@ function serveProduct(req, res) {
             };
             processEJS(res, "static/product.html", scope);
         } else {
-            serveNotFound(req, res);
-
+            serveNotFound(req, res, "Введенный вами товар не найден");
         }
     });
 }
@@ -128,8 +127,12 @@ function serveReset(req, res) {
     sendResponse(200, "Счетчик сброшен", res);
 }
 
-function serveNotFound(req, res) {
-    sendResponse(404, "Not found", res);
+function serveNotFound(req, res, customMessage) {
+    const message = (customMessage ? customMessage : "Введенная вами страница на сайте не обнаружена.");
+    const scope = {
+        message: message
+    };
+    processEJS(res, "static/page_not_found.html", scope);
 }
 
 function serveInternalError(req, res) {
