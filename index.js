@@ -14,7 +14,6 @@ const route = {
     BASE: "/",
     COUNTER: "/counter",
     RESET: "/reset",
-    PRODUCT: "/product"
 };
 
 let counter = 0;
@@ -33,9 +32,6 @@ function handler(req, res) {
                 break;
             case route.RESET:
                 serveReset(req, res);
-                break;
-            case route.PRODUCT:
-                serveProduct(req, res);
                 break;
             default:
                 if (parsedURL.pathname.indexOf("/product/") === 0) {
@@ -79,13 +75,22 @@ function serveOther(req, res, customFileName) {
 
 function serveProduct(req, res) {
     const parsedURL = URL.parse(req.url);
-    const a = parsedURL.path.replace("/product/", "").split("-");
-    ProductService.getProductByKey(a[0]).then(function (result) {
-        if (result) {
-            const scope = {
-                product: result
-            };
-            processEJS(res, "static/product.html", scope);
+    const slugPart = parsedURL.path.replace("/product/", "")
+    const parts = slugPart.split("-");
+    const key = parts[0];
+    const slug = slugPart.slice(key.length + 1);
+    ProductService.getProductByKey(key).then(function (product) {
+        if (product) {
+            console.log("Slug is " + product.slug);
+            if (slug === product.slug) {
+                const scope = {
+                    product: product
+                };
+                processEJS(res, "static/product.html", scope);
+            } else {
+                const url = '/product/' + product.key + '-' + product.slug;
+                sendRedirect(res, url);
+            }
         } else {
             serveNotFound(req, res, "Введенный вами товар не найден");
         }
@@ -121,7 +126,6 @@ function serveCounter(req, res) {
     sendResponse(200, counter.toString(), res);
 }
 
-
 function serveReset(req, res) {
     counter = 0;
     sendResponse(200, "Счетчик сброшен", res);
@@ -151,6 +155,12 @@ function sendResponse(code, body, res) {
     res.statusCode = code;
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.write(body);
+    res.end();
+}
+
+function sendRedirect(res, location) {
+    res.statusCode = 301;
+    res.setHeader("Location", location);
     res.end();
 }
 
