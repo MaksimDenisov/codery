@@ -4,27 +4,110 @@ const fs = require('fs');
 const ejs = require('ejs');
 const URL = require("url");
 
-const ProductService = require("./ProductService");
+const ProductService = require('./ProductService');
 
 const conf = {
     PORT: 3000
 };
 
 const route = {
-    BASE: "/",
-    COUNTER: "/counter",
-    RESET: "/reset",
+    ROOT: '/',
+    COUNTER: '/counter',
+    RESET: '/reset',
+    PRODUCT: '/product/'
 };
 
-let counter = 0;
+const staticFiles = {
+    BASE_PATH: 'static/',
+    INDEX: 'index.html',
+    PRODUCT: 'product.html',
+    PAGE_NOT_FOUND: 'page_not_found.html'
+};
 
-function handler(req, res) {
-    const parsedURL = URL.parse(req.url);
-    console.log(parsedURL);
-    console.log("Path", parsedURL.pathname);
+const messages = {
+    COUNTER_RESET: 'Счетчик сброшен',
+    PRODUCT_NOT_FOUND: 'Введенный вами товар не найден.',
+    PAGE_NOT_FOUND: 'Введенная вами страница на сайте не обнаружена.',
+    SERVER_ERROR: 'Ошибка сервера'
+};
+
+const contentTypes = {
+    '.css': 'text/css',
+    '.js': 'text/javascript',
+    '.png': 'image/png',
+    '.html': 'text/html',
+    '.htm': 'text/html',
+};
+
+let visitCounter = 0;
+
+function startServer() {
+    const server = http.createServer(mainRouting);
+    console.log('Server start');
+    ProductService.init();
+    server.listen(conf.PORT);
+}
+
+/*
+    Handlers functions.
+ */
+
+/**
+ * The entry point.
+ */
+function mainRouting(req, res) {
+    const pathname = getPathname(req);
     try {
-        switch (parsedURL.pathname) {
-            case route.BASE:
+        if (isFile(pathname)) {
+            serveFile(req, res);
+        } else {
+            serveDynamicPages(req, res);
+        }
+    } catch (err) {
+        serveInternalError(req, res);
+    }
+}
+
+/**
+ * Handles static file.
+ * @param req Request
+ * @param res Response
+ * @param customFileName  if present, will be used instead of the request path.
+ */
+function serveFile(req, res, customFileName) {
+    const filename = staticFiles.BASE_PATH + (customFileName ? customFileName : path.basename(req.url));
+    if (fs.existsSync(filename)) {
+        sendFile(getContentType(filename), filename, res);
+    } else {
+        serveNotFound(req, res);
+    }
+}
+
+
+/**
+ * Handle page not found.
+ * @param req Request
+ * @param res Response
+ * @param message if not present, will be used default message.
+ */
+function serveNotFound(req, res, message) {
+    message = (message ? message : messages.PAGE_NOT_FOUND);
+    getCompiledEJS(staticFiles.PAGE_NOT_FOUND)
+        .then(data => sendHtmlResponse(data({message: message}), res));
+}
+
+/**
+ * Handle dynamic pages.
+ * @param req Request
+ * @param res Response
+ */
+function serveDynamicPages(req, res) {
+    const pathname = getPathname(req);
+    if (pathname.indexOf(route.PRODUCT) === 0) {
+        serveProduct(req, res);
+    } else {
+        switch (pathname) {
+            case route.ROOT:
                 serveIndex(req, res);
                 break;
             case route.COUNTER:
@@ -34,137 +117,174 @@ function handler(req, res) {
                 serveReset(req, res);
                 break;
             default:
-                if (parsedURL.pathname.indexOf("/product/") === 0) {
-                    serveProduct(req, res);
-                } else {
-                    serveOther(req, res);
-                }
+                serveNotFound(req, res);
         }
-    } catch (err) {
-        serveInternalError(req, res);
     }
 }
 
-function serveOther(req, res, customFileName) {
-    const filename = "static/" + (customFileName ? customFileName : path.basename(req.url));
-    if (fs.existsSync(filename)) {
-        const extension = path.extname(filename);
-        let type;
-        switch (extension) {
-            case ".css":
-                type = "text/css";
-                break;
-            case ".js":
-                type = "text/javascript";
-                break;
-            case ".png":
-                type = "image/png";
-                break;
-            case ".html":
-            case ".htm":
-                type = "text/html";
-                break;
-            default:
-                type = -"text/plain";
-        }
-        sendStatic(type, filename, res);
-    } else {
-        serveNotFound(req, res);
-    }
-}
-
+/**
+ * Handle product page.
+ * @param req Request
+ * @param res Response
+ */
 function serveProduct(req, res) {
-    const parsedURL = URL.parse(req.url);
-    const slugPart = parsedURL.path.replace("/product/", "")
-    const parts = slugPart.split("-");
-    const key = parts[0];
-    const slug = slugPart.slice(key.length + 1);
-    ProductService.getProductByKey(key).then(function (product) {
+    const productInfo = getProductInfo(req);
+    ProductService.getProductByKey(productInfo.key).then(function (product) {
         if (product) {
-            console.log("Slug is " + product.slug);
-            if (slug === product.slug) {
-                const scope = {
-                    product: product
-                };
-                processEJS(res, "static/product.html", scope);
+            if (productInfo.slug === product.slug) {
+                getCompiledEJS(staticFiles.PRODUCT)
+                    .then(data => sendHtmlResponse(data({product: product}), res));
             } else {
-                const url = '/product/' + product.key + '-' + product.slug;
-                sendRedirect(res, url);
+                sendRedirect(res, getProductPath(product));
             }
         } else {
-            serveNotFound(req, res, "Введенный вами товар не найден");
+            serveNotFound(req, res, messages.PRODUCT_NOT_FOUND);
         }
     });
 }
 
+/**
+ * Handle  main page.
+ * @param req Request
+ * @param res Response
+ */
 function serveIndex(req, res) {
-    counter++;
-    ProductService.getProducts().then(function (result) {
-        const scope = {
-            products: result
-        };
-        processEJS(res, "static/index.html", scope);
-    });
-
-}
-
-function processEJS(res, filename, scope) {
-    fs.readFile(filename, 'utf-8', function (err, data) {
-        if (!err) {
-            const template = ejs.compile(data.toString());
-            const html = template(scope);
-            res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
-            res.write(html);
-            res.end()
-        } else {
-            console.log(err);
-        }
+    visitCounter++;
+    ProductService.getProducts().then(function (products) {
+        getCompiledEJS(staticFiles.INDEX)
+            .then(ejs => sendHtmlResponse(ejs({products: products}), res));
     });
 }
 
+/**
+ * Handle count of visits main page.
+ * @param req Request
+ * @param res Response
+ */
 function serveCounter(req, res) {
-    sendResponse(200, counter.toString(), res);
+    sendHtmlResponse(200, visitCounter.toString(), res);
 }
 
+/**
+ * Reset count of visits main page.
+ * @param req Request
+ * @param res Response
+ */
 function serveReset(req, res) {
-    counter = 0;
-    sendResponse(200, "Счетчик сброшен", res);
+    visitCounter = 0;
+    sendHtmlResponse(200, messages.COUNTER_RESET, res);
 }
 
-function serveNotFound(req, res, customMessage) {
-    const message = (customMessage ? customMessage : "Введенная вами страница на сайте не обнаружена.");
-    const scope = {
-        message: message
-    };
-    processEJS(res, "static/page_not_found.html", scope);
-}
-
+/**
+ * Handle server error.
+ * @param req Request
+ * @param res Response
+ */
 function serveInternalError(req, res) {
     res.statusCode = 500;
-    res.write("Server Internal Error");
+    res.write(messages.SERVER_ERROR);
     res.end();
 }
 
-function sendStatic(type, filename, res) {
+/**
+ * Creates compiled EJS by file name.
+ * @param filename
+ * @returns  Compiled EJS.
+ */
+function getCompiledEJS(filename) {
+    return new Promise(function (resolve, reject) {
+        fs.readFile(staticFiles.BASE_PATH + filename, 'utf-8', function (err, data) {
+            if (!err) {
+                resolve(ejs.compile(data.toString()));
+            } else {
+                reject(err);
+            }
+        });
+    });
+}
+
+/*
+    Functions for work with paths.
+ */
+
+/**
+ * Get key and slug of product.
+ * @param req  Request
+ * @returns {{key: string, slug: string}}  Key and slug of product.
+ */
+function getProductInfo(req) {
+    const parsedURL = URL.parse(req.url);
+    const slugPart = parsedURL.path.replace(route.PRODUCT, '');
+    const parts = slugPart.split('-');
+    const key = parts[0];
+    const slug = slugPart.slice(key.length + 1);
+    return {
+        key: key,
+        slug: slug
+    };
+}
+
+/**
+ * Create path of product page.
+ * @param productInfo Must contain key and slug of product.
+ * @returns {string} of product page.
+ */
+function getProductPath(productInfo) {
+    return route.PRODUCT + productInfo.key + '-' + productInfo.slug;
+}
+
+/**
+ * Get path  from URL.
+ * @param req Request
+ * @returns {string}
+ */
+function getPathname(req) {
+    const parsedURL = URL.parse(req.url);
+    return parsedURL.pathname;
+}
+
+/**
+ * Check path is static file or dynamic page.
+ * @param filename
+ * @returns {boolean} return true if the path is a file
+ */
+function isFile(filename) {
+    return !(path.extname(filename) === '');
+}
+
+/**
+ * Gets Content-Type by extension of file.
+ * @param filename
+ * @returns {string} Content-Type header
+ */
+function getContentType(filename) {
+    const extension = path.extname(filename);
+    const type = contentTypes[extension];
+    return (contentTypes[extension] === undefined) ? 'text/plain' : type;
+}
+
+/*
+   Response Functions
+ */
+
+function sendFile(type, filename, res) {
     const fileStream = fs.createReadStream(filename);
-    res.setHeader("Content-Type", type);
+    res.setHeader('Content-Type', type);
     fileStream.pipe(res);
 }
 
-function sendResponse(code, body, res) {
-    res.statusCode = code;
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
+function sendHtmlResponse(body, res) {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.write(body);
     res.end();
 }
 
 function sendRedirect(res, location) {
     res.statusCode = 301;
-    res.setHeader("Location", location);
+    res.setHeader('Location', location);
     res.end();
 }
 
-const server = http.createServer(handler);
-console.log("Server start");
-ProductService.init();
-server.listen(conf.PORT);
+startServer();
+
