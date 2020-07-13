@@ -14,7 +14,8 @@ const route = {
     ROOT: '/',
     COUNTER: '/counter',
     RESET: '/reset',
-    PRODUCT: '/product/'
+    PRODUCT: '/product/',
+    STATIC: '/static'
 };
 
 const staticFiles = {
@@ -58,7 +59,7 @@ function startServer() {
 function mainRouting(req, res) {
     const pathname = getPathname(req);
     try {
-        if (isFile(pathname)) {
+        if (isStaticFile(pathname)) {
             serveFile(req, res);
         } else {
             serveDynamicPages(req, res);
@@ -103,7 +104,7 @@ function serveNotFound(req, res, message) {
  */
 function serveDynamicPages(req, res) {
     const pathname = getPathname(req);
-    if (pathname.indexOf(route.PRODUCT) === 0) {
+    if (pathname.indexOf(route.PRODUCT) == 0) {
         serveProduct(req, res);
     } else {
         switch (pathname) {
@@ -248,8 +249,8 @@ function getPathname(req) {
  * @param filename
  * @returns {boolean} return true if the path is a file
  */
-function isFile(filename) {
-    return !(path.extname(filename) === '');
+function isStaticFile(filename) {
+    return (filename.indexOf(route.STATIC) == 0);
 }
 
 /**
