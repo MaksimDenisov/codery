@@ -1,14 +1,16 @@
-var webpack = require('webpack');
+const path = require("path");
+const fs = require("fs");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+
 
 var config = {
-    mode: "development",
-    context: __dirname, // `__dirname` is root of project and `/src` is source
+    context: __dirname,
     entry: {
         app: './static/app.jsx',
     },
     output: {
-        path: __dirname + '/public', // `/dist` is the destination
-        filename: 'bundle.js', // bundle created by webpack it will contain all our app logic. we will link to this .js file from our html page.
+        path: __dirname + '/public',
+        filename: 'bundle.js',
     },
     module: {
         rules: [
@@ -24,6 +26,12 @@ var config = {
             }
         ]
     },
+
+    plugins: [
+        new CopyWebpackPlugin([
+            { from: `static`, to: `` },
+        ]),
+    ],
 };
 
 module.exports = config;

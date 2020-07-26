@@ -15,11 +15,11 @@ const route = {
     COUNTER: '/counter',
     RESET: '/reset',
     PRODUCT: '/product/',
-    STATIC: '/static'
+    STATIC: '/public'
 };
 
 const staticFiles = {
-    BASE_PATH: 'static/',
+    BASE_PATH: 'public/',
     INDEX: 'index.html',
     PRODUCT: 'product.html',
     PAGE_NOT_FOUND: 'page_not_found.html'
@@ -43,7 +43,7 @@ const contentTypes = {
 let visitCounter = 0;
 
 function startServer() {
-    const server = http.createServer(mainRouting);
+    const server = http.createServer(serveSPA);
     console.log('Server start');
     ProductService.init();
     server.listen(conf.PORT);
@@ -52,6 +52,22 @@ function startServer() {
 /*
     Handlers functions.
  */
+
+/**
+ * The entry point of SPA.
+ */
+function serveSPA(req, res) {
+    const pathname = getPathname(req);
+    try {
+        if (isStaticFile(pathname)) {
+            serveFile(req, res);
+        } else {
+            serveFile(req, res, 'spa.html');
+        }
+    } catch (err) {
+        serveInternalError(req, res);
+    }
+}
 
 /**
  * The entry point.
