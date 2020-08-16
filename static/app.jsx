@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import ProductPage from "./pages/ProductPage.jsx";
+import IndexPage from "./pages/IndexPage.jsx";
 
 /**
  * Entry point.
  */
-ReactDOM.render(<ProductPage/>,
+ReactDOM.render(<IndexPage/>,
     document.getElementById('root')
 );
 

@@ -1,7 +1,5 @@
 import React from "react";
-import Nav from "../components/Nav.jsx";
 import ProductBox from "../components/ProductBox.jsx";
-import Footer from "../components/Footer.jsx";
 
 /**
  * Page shows detail information of product.
@@ -9,15 +7,13 @@ import Footer from "../components/Footer.jsx";
 export default class ProductPage extends React.Component {
 
     render() {
+        let fakes = [{name: 'ПВУ Turkov ZENIT 350 HECO', image: '/public/product1.png'},
+            {name: 'ПВУ Turkov ZENIT 350 HECO ИСП.2', image: '/public/product2.png'}];
+        let index = this.props.match.params.product - 1;
         return <React.Fragment>
-            <header className="row bg-primary font-weight-bold">
-                <div className="col-10 offset-1 col-sm-8 offset-sm-2 navbar navbar-expand-lg navbar-dark bg-primary">
-                    <Nav tabs={["Каталог", "Доставка", "Гарантии", "Контакты"]} className="navbar-nav"/>
-                </div>
-            </header>
             <ProductBox tabs={["Каталог", "Вентиляция", "ПВУ"]}
-                        title="ПВУ Turkov ZENIT 350 HECO"
-                        image="https://www.codery.school/content/course/lesson3-task-img.png">
+                        title={fakes[index].name}
+                        image={fakes[index].image}>
                 Вентиляционная установка с рекуперацией тепла и влаги в легком м универсальном
                 корпусе
                 из вспененного
@@ -25,7 +21,6 @@ export default class ProductPage extends React.Component {
                 небольших
                 офисах, магазинах.
             </ProductBox>
-            <Footer name="@ Codery.camp, 2019"/>
         </React.Fragment>;
     }
 }
