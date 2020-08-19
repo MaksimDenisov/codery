@@ -15,7 +15,8 @@ const route = {
     COUNTER: '/counter',
     RESET: '/reset',
     PRODUCT: '/product/',
-    STATIC: '/public'
+    STATIC: '/public',
+    API: '/api'
 };
 
 const staticFiles = {
@@ -59,7 +60,9 @@ function startServer() {
 function serveSPA(req, res) {
     const pathname = getPathname(req);
     try {
-        if (isStaticFile(pathname)) {
+        if (isApiRequest(pathname)) {
+            serveApi(req, res);
+        } else if (isStaticFile(pathname)) {
             serveFile(req, res);
         } else {
             serveFile(req, res, 'spa.html');
@@ -68,6 +71,7 @@ function serveSPA(req, res) {
         serveInternalError(req, res);
     }
 }
+
 
 /**
  * The entry point.
@@ -82,6 +86,35 @@ function mainRouting(req, res) {
         }
     } catch (err) {
         serveInternalError(req, res);
+    }
+}
+
+/**
+ * Handles Api requests
+ * @param req Request
+ * @param res Response
+ */
+function serveApi(req, res) {
+    const pathname = getPathname(req);
+    const parts = pathname.split('/');
+    if (parts[2] == 'products') {
+        if (!parts[3]) {
+            ProductService.getProducts().then(function (products) {
+                sendJSONResponse(products, res);
+            });
+        } else {
+            ProductService.getProductById(parts[3]).then(function (products) {
+                if (products) {
+                    sendJSONResponse(products, res);
+                } else {
+                    sendNotFound(res);
+                }
+            }).catch(function (err) {
+                serveInternalError(req, res, err.message);
+            });
+        }
+    } else {
+        sendNotFound(res);
     }
 }
 
@@ -196,10 +229,13 @@ function serveReset(req, res) {
  * Handle server error.
  * @param req Request
  * @param res Response
+ * @param message  if not present, will be used default message.
  */
-function serveInternalError(req, res) {
+function serveInternalError(req, res, message) {
+    message = (message ? message : messages.SERVER_ERROR);
     res.statusCode = 500;
-    res.write(messages.SERVER_ERROR);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.write(message);
     res.end();
 }
 
@@ -270,6 +306,15 @@ function isStaticFile(filename) {
 }
 
 /**
+ * Check path is API request
+ * @param path
+ * @returns {boolean} return true if the path is a file
+ */
+function isApiRequest(path) {
+    return (path.indexOf(route.API) == 0);
+}
+
+/**
  * Gets Content-Type by extension of file.
  * @param filename
  * @returns {string} Content-Type header
@@ -290,10 +335,22 @@ function sendFile(type, filename, res) {
     fileStream.pipe(res);
 }
 
+function sendNotFound(res) {
+    res.statusCode = 404;
+    res.end();
+}
+
 function sendHtmlResponse(body, res) {
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.write(body);
+    res.end();
+}
+
+function sendJSONResponse(obj, res) {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.write(JSON.stringify(obj));
     res.end();
 }
 
