@@ -109,7 +109,10 @@ function serveApi(req, res) {
     if (parts[2] == 'products') {
         if (!parts[3]) {
             ProductService.getProducts().then(function (products) {
-                sendJSONResponse(products, res);
+                // Delay, imitation of long loading.
+                setTimeout(function() {
+                     sendJSONResponse(products, res);
+                }, 2000);
             });
         } else {
             ProductService.getProductById(parts[3]).then(function (products) {

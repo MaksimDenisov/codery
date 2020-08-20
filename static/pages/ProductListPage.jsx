@@ -8,16 +8,32 @@ export default class ProductListPage extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            status: 'idle'
+        };
     }
 
     componentDidMount() {
+        this.setState({status: 'pending'});
         fetch("/api/products")
             .then(function (response) {
+                console.log(response.status);
+                if (response.status != 200) {
+                    throw new Error("Error!");
+                }
                 return response.json();
             })
             .then(function (json) {
-                this.setState({products: json});
+                this.setState({
+                    products: json,
+                    status: 'ready'
+                });
+            }.bind(this))
+            .catch(function (ex) {
+                console.log("Error in catch");
+                this.setState({
+                    status: 'error'
+                });
             }.bind(this));
     }
 
@@ -30,6 +46,9 @@ export default class ProductListPage extends React.Component {
                     }
                 </div>
             </main>
+            {
+                this.renderAlert(this.state.status)
+            }
         </React.Fragment>;
     }
 
@@ -47,5 +66,25 @@ export default class ProductListPage extends React.Component {
                 </div>
             </div>;
         });
+    }
+
+    renderAlert(status) {
+        let className;
+        let message;
+        switch (status) {
+            case 'ready':
+                className = "alert alert-primary";
+                message = 'Success';
+                break;
+            case 'error':
+                className = "alert alert-danger";
+                message = 'Error';
+                break;
+            default:
+                return false;
+        }
+        return <div className={className} role="alert">
+            {message}
+        </div>;
     }
 }
