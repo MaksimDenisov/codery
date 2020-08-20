@@ -41,6 +41,15 @@ const contentTypes = {
     '.htm': 'text/html',
 };
 
+const HttpStatus = {
+    OK: 200,
+    REDIRECT: 301,
+    NOT_FOUND: 404,
+    SERVER_ERROR: 500,
+    NOT_IMPLEMENTED: 501
+};
+
+
 let visitCounter = 0;
 
 function startServer() {
@@ -141,9 +150,8 @@ function serveFile(req, res, customFileName) {
  * @param message if not present, will be used default message.
  */
 function serveNotFound(req, res, message) {
-    message = (message ? message : messages.PAGE_NOT_FOUND);
     getCompiledEJS(staticFiles.PAGE_NOT_FOUND)
-        .then(data => sendHtmlResponse(data({message: message}), res));
+        .then(data => sendHtmlResponse(data({message: (message || messages.PAGE_NOT_FOUND)}), res));
 }
 
 /**
@@ -212,7 +220,7 @@ function serveIndex(req, res) {
  * @param res Response
  */
 function serveCounter(req, res) {
-    sendHtmlResponse(200, visitCounter.toString(), res);
+    sendHtmlResponse(HttpStatus.OK, visitCounter.toString(), res);
 }
 
 /**
@@ -222,7 +230,7 @@ function serveCounter(req, res) {
  */
 function serveReset(req, res) {
     visitCounter = 0;
-    sendHtmlResponse(200, messages.COUNTER_RESET, res);
+    sendHtmlResponse(HttpStatus.OK, messages.COUNTER_RESET, res);
 }
 
 /**
@@ -232,10 +240,9 @@ function serveReset(req, res) {
  * @param message  if not present, will be used default message.
  */
 function serveInternalError(req, res, message) {
-    message = (message ? message : messages.SERVER_ERROR);
-    res.statusCode = 500;
+    res.statusCode = HttpStatus.SERVER_ERROR;
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.write(message);
+    res.write(message || messages.SERVER_ERROR);
     res.end();
 }
 
@@ -336,26 +343,26 @@ function sendFile(type, filename, res) {
 }
 
 function sendNotFound(res) {
-    res.statusCode = 404;
+    res.statusCode = HttpStatus.NOT_FOUND;
     res.end();
 }
 
 function sendHtmlResponse(body, res) {
-    res.statusCode = 200;
+    res.statusCode = HttpStatus.OK;
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.write(body);
     res.end();
 }
 
 function sendJSONResponse(obj, res) {
-    res.statusCode = 200;
+    res.statusCode = HttpStatus.OK;
     res.setHeader('Content-Type', 'application/json');
     res.write(JSON.stringify(obj));
     res.end();
 }
 
 function sendRedirect(res, location) {
-    res.statusCode = 301;
+    res.statusCode = HttpStatus.REDIRECT;
     res.setHeader('Location', location);
     res.end();
 }
