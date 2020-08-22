@@ -6,21 +6,52 @@ import ProductBox from "../components/ProductBox.jsx";
  */
 export default class ProductPage extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this.state = {
+        };
+    }
+
+    componentDidMount() {
+        console.log('componentDidMount');
+        console.log(this.props.match.params);
+                fetch("/api/products?key=" + this.props.match.params.product)
+                    .then(function (response) {
+                        console.log(response.status);
+                        if (response.status != 200) {
+                            throw new Error("Error!");
+                        }
+                        return response.json();
+                    })
+                    .then(function (json) {
+                        this.setState({
+                            product: json[0],
+                            status: 'ready'
+                        });
+                    }.bind(this))
+                    .catch(function (ex) {
+                        console.log("Error in catch");
+                        this.setState({
+                            status: 'error'
+                        });
+                    }.bind(this));
+    }
+
     render() {
-        let fakes = [{name: 'ПВУ Turkov ZENIT 350 HECO', image: '/public/product1.png'},
-            {name: 'ПВУ Turkov ZENIT 350 HECO ИСП.2', image: '/public/product2.png'}];
-        let index = this.props.match.params.product - 1;
         return <React.Fragment>
-            <ProductBox tabs={["Каталог", "Вентиляция", "ПВУ"]}
-                        title={fakes[index].name}
-                        image={fakes[index].image}>
-                Вентиляционная установка с рекуперацией тепла и влаги в легком м универсальном
-                корпусе
-                из вспененного
-                полипропилена предназначена для поддержания климата в жилых помещениях, или
-                небольших
-                офисах, магазинах.
-            </ProductBox>
+            <div>
+                {
+                    this.state.product && this.renderProduct()
+                }
+            </div>
         </React.Fragment>;
+    }
+
+    renderProduct() {
+        return <ProductBox tabs={["Каталог", "Вентиляция", "ПВУ"]}
+                           title={this.state.product.title}
+                           image={'../public/' + this.state.product.img}>
+            {this.state.product.description}
+        </ProductBox>
     }
 }

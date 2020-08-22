@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const ejs = require('ejs');
 const URL = require("url");
+const queryString = require('query-string');
 
 const ProductService = require('./ProductService');
 
@@ -104,31 +105,44 @@ function mainRouting(req, res) {
  * @param res Response
  */
 function serveApi(req, res) {
-    const pathname = getPathname(req);
-    const parts = pathname.split('/');
-    if (parts[2] == 'products') {
-        if (!parts[3]) {
-            ProductService.getProducts().then(function (products) {
-                // Delay, imitation of long loading.
-                setTimeout(function() {
-                     sendJSONResponse(products, res);
-                }, 2000);
-            });
-        } else {
-            ProductService.getProductById(parts[3]).then(function (products) {
-                if (products) {
-                    sendJSONResponse(products, res);
-                } else {
-                    sendNotFound(res);
-                }
-            }).catch(function (err) {
-                serveInternalError(req, res, err.message);
-            });
-        }
-    } else {
-        sendNotFound(res);
+    const parsed = queryString.parseUrl(req.url);
+    const params = parsed.url.replace(route.API + '/', '').split('/');
+    switch (params[0]) { // for future usage
+        case 'products':
+            // setTimeout(function(){ // test delay
+            serveApiProducts(req, res, params, parsed.query);
+            //},2000);
+            break;
+        default:
+            sendNotFound(res);
     }
 }
+
+/**
+ * Handles Product Api  requests
+ * @param req  Request
+ * @param res Response
+ * @param params Array of params with first element "products'
+ * @param query map of query params
+ */
+function serveApiProducts(req, res, params, query) {
+    if (params.length > 1) {
+        ProductService.getProductById(params[1]).then(function (product) {
+            if (product) {
+                sendJSONResponse(product, res);
+            } else {
+                sendNotFound(res);
+            }
+        }).catch(function (err) {
+            serveInternalError(req, res, err.message);
+        });
+    } else {
+        ProductService.getProducts(query).then(function (products) {
+            sendJSONResponse(products, res);
+        });
+    }
+}
+
 
 /**
  * Handles static file.

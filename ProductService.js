@@ -13,8 +13,16 @@ module.exports = {
             });
     },
 
-    getProducts() {
-        const cursor = productCollection.find();
+    getProducts(where) {
+        let cursor;
+        if (where) {
+            if (where.key) {
+                where.key = Number(where.key);
+            }
+            cursor = productCollection.find(where);
+        } else {
+            cursor = productCollection.find();
+        }
         return cursor.toArray();
     },
 
