@@ -26,10 +26,6 @@ module.exports = {
         return cursor.toArray();
     },
 
-    getProductByKey(key) {
-        return productCollection.findOne({'key': parseInt(key)});
-    },
-
     getProductById(id) {
         let mongoId;
         try {

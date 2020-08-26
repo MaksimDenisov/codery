@@ -4,6 +4,7 @@ import {BrowserRouter as Router, Route, Switch} from "react-router-dom";
 import Nav from "../components/Nav.jsx";
 import ProductPage from "./ProductPage.jsx";
 import ProductListPage from "./ProductListPage.jsx";
+import NotFoundPage from "./NotFoundPage.jsx";
 import Footer from "../components/Footer.jsx";
 
 import {createBrowserHistory} from "history";
@@ -21,6 +22,7 @@ export default class IndexPage extends React.Component {
             <Switch>
                 <Route exact path="/" component={ProductListPage}/>
                 <Route path="/products/:product" component={ProductPage}/>
+                <Route path="*" component={NotFoundPage}/>
             </Switch>
             < Footer name="@ Codery.camp, 2019"/>
         </Router>;
