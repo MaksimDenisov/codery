@@ -32,6 +32,10 @@ function startServer() {
     app.get('/api/products', serveApiProducts);
     app.get('/api/products/:id', serveApiOneProduct);
 
+    app.get('/panel', serveSPA);
+    app.get('/panel/product', serveSPA);
+    app.get('/panel/product/:id', serveSPA);
+
     app.use('/public', express.static('public'));
     app.use(serveNotFound);
 

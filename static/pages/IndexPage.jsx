@@ -1,27 +1,38 @@
 import React from "react";
 import {BrowserRouter as Router, Route, Switch} from "react-router-dom";
 
-import Nav from "../components/Nav.jsx";
+import Footer from "../components/Footer.jsx";
+import AppBarComponent from "../components/AppBarComponent.jsx";
+import PanelAppBarComponent from "../components/PanelAppBarComponent.jsx";
+
 import ProductPage from "./ProductPage.jsx";
 import ProductListPage from "./ProductListPage.jsx";
 import NotFoundPage from "./NotFoundPage.jsx";
-import Footer from "../components/Footer.jsx";
+import PanelProductsPage from "./PanelProductsPage.jsx";
+import PanelProductPage from "./PanelProductPage.jsx";
+
 
 import {createBrowserHistory} from "history";
+
 
 const history = createBrowserHistory();
 
 export default class IndexPage extends React.Component {
+
     render() {
         return <Router history={history}>
-            <header className="row bg-primary font-weight-bold">
-                <div className="col-10 offset-1 col-sm-8 offset-sm-2 navbar navbar-expand-lg navbar-dark bg-primary">
-                    <Nav tabs={["Каталог", "Доставка", "Гарантии", "Контакты"]} className="navbar-nav"/>
-                </div>
-            </header>
+            <Switch>
+                <Route path="/panel" component={PanelAppBarComponent}/>
+                <Route path="*" component={AppBarComponent}/>
+            </Switch>
             <Switch>
                 <Route exact path="/" component={ProductListPage}/>
                 <Route path="/products/:product" component={ProductPage}/>
+
+                <Route exact path="/panel" component={PanelProductsPage}/>
+                <Route exact path="/panel/product" component={PanelProductPage}/>
+                <Route path="/panel/product/:id" component={PanelProductPage}/>
+
                 <Route path="*" component={NotFoundPage}/>
             </Switch>
             < Footer name="@ Codery.camp, 2019"/>
