@@ -62,7 +62,7 @@ export default class ProductListPage extends React.Component {
                 <div className="row mt-3 mb-3">
                     <div className="col-3 offset-3  pl-0">
                         <Link className="btn btn-primary font-weight-bold"
-                              to={'panel/product/' + item._id}>Заказать</Link>
+                              to={'/panel/product/' + item._id}>Заказать</Link>
                     </div>
                 </div>
             </div>;
