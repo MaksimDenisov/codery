@@ -81,16 +81,36 @@ export default class ProductPage extends React.Component {
 
     renderForm() {
         return <form>
+            <label htmlFor="title">Название:</label>
+            <input className="form-control" id="title"
+                   name="title"
+                   onChange={this.onChange.bind(this)}
+                   value={this.state.product.title}/>
+
             <label htmlFor="description">Описание:</label>
             <textarea className="form-control" rows="5" id="description"
-                      placeholder="Описание товара"
                       onChange={this.onChange.bind(this)}
                       value={this.state.product.description}/>
+
+
+            <label htmlFor="key">Key:</label>
+            <input className="form-control" id="key"
+                   name="key"
+                   type="number"
+                   onChange={this.onChange.bind(this)}
+                   value={this.state.product.key}/>
+
+            <label htmlFor="slug">Slug:</label>
+            <input className="form-control" id="slug"
+                   name="slug"
+                   onChange={this.onChange.bind(this)}
+                   value={this.state.product.slug}/>
         </form>;
     }
 
     onChange(event) {
-        this.state.product.description = event.target.value;
+        const name = event.target.name;
+        this.state.product[name] = event.target.value;
         this.forceUpdate();
     }
 }
