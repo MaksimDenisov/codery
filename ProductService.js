@@ -34,6 +34,21 @@ module.exports = {
             return Promise.reject(err);
         }
         return productCollection.findOne({_id: mongoId});
+    },
+
+    updateProduct(id, patch) {
+        delete patch._id;
+        return new Promise(function (resolve, reject) {
+            productCollection.update(
+                {_id: ObjectID(id)},
+                {
+                    $set: patch
+                }).then(resolve());
+        }).then(function (result) {
+            let mongoId;
+            mongoId = ObjectID(id);
+            return productCollection.findOne({_id: mongoId});
+        });
     }
 };
 

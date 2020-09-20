@@ -105,7 +105,23 @@ export default class ProductPage extends React.Component {
                    name="slug"
                    onChange={this.onChange.bind(this)}
                    value={this.state.product.slug}/>
+
+            <button className="btn btn-danger font-weight-bold"
+                    onClick={this.onSave.bind(this)}>
+                Сохранить
+            </button>
         </form>;
+    }
+
+    onSave(event) {
+        event.preventDefault();
+        fetch(`/api/products/` + this.props.match.params.id, {
+            method: "PUT",
+            body: JSON.stringify(this.state.product),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
     }
 
     onChange(event) {

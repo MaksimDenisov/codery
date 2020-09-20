@@ -2,6 +2,8 @@ const express = require('express');
 const app = express();
 
 const path = require('path');
+const bodyParser = require('body-parser');
+const jsonBodyParser = bodyParser("json");
 
 const ProductService = require('./ProductService');
 
@@ -26,15 +28,20 @@ const HttpStatus = {
 
 function startServer() {
     ProductService.init();
+
     app.get('/', serveSPA);
     app.get('/products/:key_and_slug', serveSPA);
-
-    app.get('/api/products', serveApiProducts);
-    app.get('/api/products/:id', serveApiOneProduct);
 
     app.get('/panel', serveSPA);
     app.get('/panel/product', serveSPA);
     app.get('/panel/product/:id', serveSPA);
+
+    app.use(jsonBodyParser);
+
+    app.get('/api/products', serveApiProducts);
+    app.get('/api/products/:id', serveApiOneProduct);
+    app.put('/api/products/:id', serveApiUpdateOneProduct);
+
 
     app.use('/public', express.static('public'));
     app.use(serveNotFound);
@@ -87,6 +94,18 @@ function serveApiOneProduct(req, res) {
     }).catch(function (err) {
         serveInternalError(req, res, err.message);
     });
+}
+
+/**
+ * Update one product by id.
+ * @param req
+ * @param res
+ */
+function serveApiUpdateOneProduct(req, res) {
+    ProductService.updateProduct(req.params.id, req.body)
+        .then(function (result) {
+            res.json(result);
+        });
 }
 
 /**
