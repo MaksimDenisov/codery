@@ -32,6 +32,9 @@ function startServer() {
     app.get('/', serveSPA);
     app.get('/products/:key_and_slug', serveSPA);
 
+    app.get('/login', serveLogin);
+    app.get('/login2', serveLogin2);
+
     app.get('/panel', serveSPA);
     app.get('/panel/product', serveSPA);
     app.get('/panel/product/:id', serveSPA);
@@ -66,6 +69,29 @@ function serveSPA(req, res) {
 /*
  * Handles Product Api  requests
  */
+
+/**
+ * Login function
+ * must set cookie
+ * @param req Request
+ * @param res Response
+ */
+function serveLogin(req, res) {
+    res.setHeader('Set-Cookie', 'user=user@mail.com; Path=/');
+    res.end();
+}
+
+/**
+ * Login function
+ * must set cookie by express
+ * @param req Request
+ * @param res Response
+ */
+function serveLogin2(req, res) {
+    res.cookie('user', 'user2@mail.com', {encode: String});
+    res.end();
+}
+
 
 /**
  * Handle products request.
