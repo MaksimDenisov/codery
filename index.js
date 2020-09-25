@@ -56,11 +56,20 @@ function startServer() {
 
     app.get('/api/bcrypt', serveApiBcrypt);
     app.get('/api/login', serveApiLogin);
-    app.get('/api/me', serveApiMe);
+
     app.get('/api/products', serveApiProducts);
+
+    app.get('/api/me', checkToken);
+    app.get('/api/me', serveApiMe);
+
+    app.get('/api/products/:id', checkToken);
     app.get('/api/products/:id', serveApiOneProduct);
+
+    app.put('/api/products/:id', checkToken);
     app.put('/api/products/:id', serveApiUpdateOneProduct);
-    app.post('/api/products', serveApiCreateOneProduct);
+
+    app.get('/api/products/:id', checkToken);
+    app.get('/api/products/:id', serveApiCreateOneProduct);
 
 
     app.use('/public', express.static('public'));
@@ -145,7 +154,7 @@ function serveApiLogin(req, res) {
             throw 'Incorrect password';
         }
         const payload = {
-            email: user.email
+            email: user.mail
         };
         const token = jwt.sign(payload, SECRET, {
             expiresIn: "5m"
@@ -161,27 +170,28 @@ function serveApiLogin(req, res) {
 }
 
 
+function checkToken(req, res, next) {
+    try {
+        const payload = jwt.verify(req.cookies.token, SECRET);
+        console.log(payload);
+        req.user = {mail: payload.email};
+        next();
+    } catch (err) {
+        res.status(HttpStatus.UNAUTHORIZED);
+        res.write(messages.UNAUTHORIZED);
+        res.end();
+    }
+}
+
 /**
  * Return cookie.
  * @param req Request
  * @param res Response
  */
 function serveApiMe(req, res) {
-    try {
-        const payload = jwt.verify(req.cookies.token, SECRET);
-        console.log(payload.email);
-        DBService.getUserByEmail(payload.email).then(function (user) {
-            if (user) {
-                res.status(HttpStatus.OK);
-                res.write(JSON.stringify(user));
-            }
-            res.end();
-        });
-    } catch (err) {
-        res.status(HttpStatus.UNAUTHORIZED);
-        res.write(messages.UNAUTHORIZED);
-        res.end();
-    }
+    res.status(HttpStatus.OK);
+    res.write(req.user.mail);
+    res.end();
 }
 
 /**
