@@ -5,6 +5,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const jsonBodyParser = bodyParser("json");
 const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
 const DBService = require('./DBService');
 
@@ -28,6 +29,9 @@ const HttpStatus = {
     SERVER_ERROR: 500,
     NOT_IMPLEMENTED: 501
 };
+
+const SECRET = "zxcvbnmasdfghjklqwertyuiop";
+
 
 function startServer() {
     DBService.init();
@@ -84,7 +88,13 @@ function serveSPA(req, res) {
  * @param res Response
  */
 function serveLogin(req, res) {
-    res.setHeader('Set-Cookie', 'user=user@mail.com; Path=/');
+    const payload = {
+        email: "user@mail.com"
+    };
+    const token = jwt.sign(payload, SECRET, {
+        expiresIn: "5m"
+    });
+    res.cookie('token', token, {encode: String});
     res.end();
 }
 
