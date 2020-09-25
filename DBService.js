@@ -59,7 +59,6 @@ module.exports = {
 
     getUserByEmail(mail) {
         return userCollection.findOne({mail: mail});
-        ;
     },
 
 };

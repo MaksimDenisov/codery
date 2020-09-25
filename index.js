@@ -6,6 +6,9 @@ const bodyParser = require('body-parser');
 const jsonBodyParser = bodyParser("json");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+
+const saltRounds = 10;
 
 const DBService = require('./DBService');
 
@@ -51,7 +54,7 @@ function startServer() {
 
     app.use(jsonBodyParser);
 
-
+    app.get('/api/bcrypt', serveApiBcrypt);
     app.get('/api/login', serveApiLogin);
     app.get('/api/me', serveApiMe);
     app.get('/api/products', serveApiProducts);
@@ -111,6 +114,18 @@ function serveLogin2(req, res) {
     res.end();
 }
 
+/**
+ * Get bcrypt string
+ * @param req Request
+ * @param res Response
+ */
+function serveApiBcrypt(req, res) {
+    const password = req.query.password;
+    res.status(HttpStatus.OK);
+    res.write(bcrypt.hashSync(password, saltRounds));
+    res.end();
+}
+
 
 /**
  * Login API function
@@ -126,7 +141,7 @@ function serveApiLogin(req, res) {
         if (!user) {
             throw 'No user';
         }
-        if (user.password !== password) {
+        if (!bcrypt.compareSync(password, user.password)) {
             throw 'Incorrect password';
         }
         const payload = {
