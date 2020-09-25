@@ -41,6 +41,7 @@ function startServer() {
     app.get('/api/products', serveApiProducts);
     app.get('/api/products/:id', serveApiOneProduct);
     app.put('/api/products/:id', serveApiUpdateOneProduct);
+    app.post('/api/products', serveApiCreateOneProduct);
 
 
     app.use('/public', express.static('public'));
@@ -94,6 +95,19 @@ function serveApiOneProduct(req, res) {
     }).catch(function (err) {
         serveInternalError(req, res, err.message);
     });
+}
+
+/**
+ * Add new product.
+ * @param req
+ * @param res
+ */
+function serveApiCreateOneProduct(req, res) {
+    ProductService.createProduct(req.body)
+        .then(function (result) {
+            const insertedItem = result.ops[0];
+            res.json(insertedItem);
+        });
 }
 
 /**

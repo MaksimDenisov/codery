@@ -40,8 +40,6 @@ export default class ProductPage extends React.Component {
                 {
                     this.state.product && this.renderProduct()
                 }
-
-
             </div>
             {
                 this.renderAlert(this.state.status)
@@ -71,6 +69,10 @@ export default class ProductPage extends React.Component {
                 className = "alert alert-danger";
                 message = 'Error';
                 break;
+            case 'saved':
+                className = "alert  alert-success";
+                message = 'Saved';
+                break;
             default:
                 return false;
         }
@@ -91,7 +93,6 @@ export default class ProductPage extends React.Component {
             <textarea className="form-control" rows="5" id="description"
                       onChange={this.onChange.bind(this)}
                       value={this.state.product.description}/>
-
 
             <label htmlFor="key">Key:</label>
             <input className="form-control" id="key"
@@ -122,6 +123,16 @@ export default class ProductPage extends React.Component {
                 "Content-Type": "application/json"
             }
         })
+            .then(function (result) {
+                this.setState({
+                    status: 'saved'
+                })
+            }.bind(this))
+            .catch(function (result) {
+                this.setState({
+                    status: 'error'
+                });
+            }.bind(this));
     }
 
     onChange(event) {

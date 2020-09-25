@@ -49,6 +49,10 @@ module.exports = {
             mongoId = ObjectID(id);
             return productCollection.findOne({_id: mongoId});
         });
+    },
+
+    createProduct(body) {
+        return productCollection.insert(body);
     }
 };
 

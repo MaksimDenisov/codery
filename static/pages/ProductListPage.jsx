@@ -56,7 +56,7 @@ export default class ProductListPage extends React.Component {
         return this.state.products.map((item, index) => {
             return <div className={'col-5 col-sm-4 mt-3' + ((index % 2 == 0) ? ' offset-1 offset-sm-2' : '')}>
                 <div className="row">
-                    <h3>{item.description}</h3>
+                    <h3>{item.title}</h3>
                     <img className="col-6 offset-3 img-fluid" src={'/public/' + item.img}/>
                 </div>
                 <div className="row mt-3 mb-3">
