@@ -4,6 +4,7 @@ const app = express();
 const path = require('path');
 const bodyParser = require('body-parser');
 const jsonBodyParser = bodyParser("json");
+const cookieParser = require("cookie-parser");
 
 const ProductService = require('./ProductService');
 
@@ -15,12 +16,14 @@ const messages = {
     COUNTER_RESET: 'Счетчик сброшен',
     PRODUCT_NOT_FOUND: 'Введенный вами товар не найден.',
     PAGE_NOT_FOUND: 'Введенная вами страница на сайте не обнаружена.',
-    SERVER_ERROR: 'Ошибка сервера'
+    SERVER_ERROR: 'Ошибка сервера',
+    UNAUTHORIZED: 'Не авторизован'
 };
 
 const HttpStatus = {
     OK: 200,
     REDIRECT: 301,
+    UNAUTHORIZED: 401,
     NOT_FOUND: 404,
     SERVER_ERROR: 500,
     NOT_IMPLEMENTED: 501
@@ -28,6 +31,8 @@ const HttpStatus = {
 
 function startServer() {
     ProductService.init();
+
+    app.use(cookieParser());
 
     app.get('/', serveSPA);
     app.get('/products/:key_and_slug', serveSPA);
@@ -41,6 +46,8 @@ function startServer() {
 
     app.use(jsonBodyParser);
 
+
+    app.get('/api/me', serveApiMe);
     app.get('/api/products', serveApiProducts);
     app.get('/api/products/:id', serveApiOneProduct);
     app.put('/api/products/:id', serveApiUpdateOneProduct);
@@ -92,6 +99,22 @@ function serveLogin2(req, res) {
     res.end();
 }
 
+/**
+ * Return cookie.
+ * @param req Request
+ * @param res Response
+ */
+function serveApiMe(req, res) {
+    const userCookie = req.cookies.user;
+    if (userCookie) {
+        res.status(HttpStatus.OK);
+        res.write(userCookie);
+    } else {
+        res.status(HttpStatus.UNAUTHORIZED);
+        res.write(messages.UNAUTHORIZED);
+    }
+    res.end();
+}
 
 /**
  * Handle products request.
