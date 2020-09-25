@@ -115,19 +115,22 @@ function serveLogin2(req, res) {
  * @param res Response
  */
 function serveApiMe(req, res) {
-    const userMail = req.cookies.user;
-    console.log(userMail);
-    DBService.getUserByEmail(userMail).then(function (user) {
-        console.log(user);
-        if (user) {
-            res.status(HttpStatus.OK);
-            res.write(JSON.stringify(user));
-        } else {
-            res.status(HttpStatus.UNAUTHORIZED);
-            res.write(messages.UNAUTHORIZED);
-        }
+    try {
+        const payload = jwt.verify(req.cookies.token, SECRET);
+        console.log(payload.email);
+        DBService.getUserByEmail(payload.email).then(function (user) {
+            if (user) {
+                res.status(HttpStatus.OK);
+                res.write(JSON.stringify(user));
+            }
+            res.end();
+        });
+    } catch (err) {
+        res.status(HttpStatus.UNAUTHORIZED);
+        res.write(messages.UNAUTHORIZED);
         res.end();
-    });
+    }
+
 }
 
 /**
