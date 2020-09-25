@@ -25,6 +25,7 @@ const HttpStatus = {
     OK: 200,
     REDIRECT: 301,
     UNAUTHORIZED: 401,
+    FORBIDDEN: 403,
     NOT_FOUND: 404,
     SERVER_ERROR: 500,
     NOT_IMPLEMENTED: 501
@@ -51,6 +52,7 @@ function startServer() {
     app.use(jsonBodyParser);
 
 
+    app.get('/api/login', serveApiLogin);
     app.get('/api/me', serveApiMe);
     app.get('/api/products', serveApiProducts);
     app.get('/api/products/:id', serveApiOneProduct);
@@ -109,6 +111,41 @@ function serveLogin2(req, res) {
     res.end();
 }
 
+
+/**
+ * Login API function
+ * @param req Request
+ * @param res Response
+ */
+function serveApiLogin(req, res) {
+    const email = req.query.email;
+    const password = req.query.password;
+
+    DBService.getUserByEmail(email).then(function (user) {
+        console.log(user);
+        if (!user) {
+            throw 'No user';
+        }
+        if (user.password !== password) {
+            throw 'Incorrect password';
+        }
+        const payload = {
+            email: user.email
+        };
+        const token = jwt.sign(payload, SECRET, {
+            expiresIn: "5m"
+        });
+        res.cookie('token', token, {encode: String});
+        res.write('Token received');
+        res.end();
+    }).catch(function (err) {
+        res.status(HttpStatus.FORBIDDEN);
+        res.write(err);
+        res.end();
+    });
+}
+
+
 /**
  * Return cookie.
  * @param req Request
@@ -130,7 +167,6 @@ function serveApiMe(req, res) {
         res.write(messages.UNAUTHORIZED);
         res.end();
     }
-
 }
 
 /**
