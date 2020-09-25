@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const jsonBodyParser = bodyParser("json");
 const cookieParser = require("cookie-parser");
 
-const ProductService = require('./ProductService');
+const DBService = require('./DBService');
 
 const conf = {
     PORT: 3000
@@ -30,7 +30,7 @@ const HttpStatus = {
 };
 
 function startServer() {
-    ProductService.init();
+    DBService.init();
 
     app.use(cookieParser());
 
@@ -105,15 +105,19 @@ function serveLogin2(req, res) {
  * @param res Response
  */
 function serveApiMe(req, res) {
-    const userCookie = req.cookies.user;
-    if (userCookie) {
-        res.status(HttpStatus.OK);
-        res.write(userCookie);
-    } else {
-        res.status(HttpStatus.UNAUTHORIZED);
-        res.write(messages.UNAUTHORIZED);
-    }
-    res.end();
+    const userMail = req.cookies.user;
+    console.log(userMail);
+    DBService.getUserByEmail(userMail).then(function (user) {
+        console.log(user);
+        if (user) {
+            res.status(HttpStatus.OK);
+            res.write(JSON.stringify(user));
+        } else {
+            res.status(HttpStatus.UNAUTHORIZED);
+            res.write(messages.UNAUTHORIZED);
+        }
+        res.end();
+    });
 }
 
 /**
@@ -124,7 +128,7 @@ function serveApiMe(req, res) {
  * @param res Response
  */
 function serveApiProducts(req, res) {
-    ProductService.getProducts(req.query).then(function (products) {
+    DBService.getProducts(req.query).then(function (products) {
         res.json(products);
     });
 }
@@ -135,7 +139,7 @@ function serveApiProducts(req, res) {
  * @param res
  */
 function serveApiOneProduct(req, res) {
-    ProductService.getProductById(req.params.id).then(function (product) {
+    DBService.getProductById(req.params.id).then(function (product) {
         if (product) {
             res.json(product);
         } else {
@@ -152,7 +156,7 @@ function serveApiOneProduct(req, res) {
  * @param res
  */
 function serveApiCreateOneProduct(req, res) {
-    ProductService.createProduct(req.body)
+    DBService.createProduct(req.body)
         .then(function (result) {
             const insertedItem = result.ops[0];
             res.json(insertedItem);
@@ -165,7 +169,7 @@ function serveApiCreateOneProduct(req, res) {
  * @param res
  */
 function serveApiUpdateOneProduct(req, res) {
-    ProductService.updateProduct(req.params.id, req.body)
+    DBService.updateProduct(req.params.id, req.body)
         .then(function (result) {
             res.json(result);
         });
