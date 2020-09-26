@@ -23,7 +23,10 @@ export default class ProductListPage extends React.Component {
 
     componentDidMount() {
         this.setState({status: 'pending'});
-        fetch("/api/products")
+        fetch("/api/products", {
+            method: "GET",
+            credentials: "same-origin"
+        })
             .then(function (response) {
                 console.log(response.status);
                 if (response.status != 200) {
@@ -124,12 +127,13 @@ export default class ProductListPage extends React.Component {
         event.preventDefault();
         fetch(`/api/products`, {
             method: "POST",
+            credentials: "same-origin",
             body: JSON.stringify(this.state.newProduct),
             headers: {
                 "Content-Type": "application/json"
             }
         }).then(function (response) {
-            if (response.status != 200) {
+            if (response.status !== 200) {
                 throw new Error("Error!");
             }
             return response.json();

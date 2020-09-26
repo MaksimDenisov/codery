@@ -12,7 +12,10 @@ export default class ProductPage extends React.Component {
     }
 
     componentDidMount() {
-        fetch("/api/products/" + this.props.match.params.id)
+        fetch("/api/products/" + this.props.match.params.id,{
+            method: "GET",
+            credentials: "same-origin"
+        })
             .then(function (response) {
                 console.log(response.status);
                 if (response.status != 200) {
@@ -117,6 +120,7 @@ export default class ProductPage extends React.Component {
     onSave(event) {
         event.preventDefault();
         fetch(`/api/products/` + this.props.match.params.id, {
+            credentials: "same-origin",
             method: "PUT",
             body: JSON.stringify(this.state.product),
             headers: {

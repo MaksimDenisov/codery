@@ -49,28 +49,29 @@ function startServer() {
     app.get('/login2', serveLogin2);
 
     app.get('/panel', serveSPA);
+    app.get('/panel/login', serveSPA);
     app.get('/panel/product', serveSPA);
     app.get('/panel/product/:id', serveSPA);
 
     app.use(jsonBodyParser);
 
+    app.get('/api/me', checkToken);
+    app.get('/api/me', serveApiMe);
+
     app.get('/api/bcrypt', serveApiBcrypt);
-    app.get('/api/login', serveApiLogin);
+
+    app.post('/api/login', serveApiLogin);
 
     app.get('/api/products', serveApiProducts);
 
-    app.get('/api/me', checkToken);
-    app.get('/api/me', serveApiMe);
+    app.post('/api/products/', checkToken);
+    app.post('/api/products/', serveApiCreateOneProduct);
 
     app.get('/api/products/:id', checkToken);
     app.get('/api/products/:id', serveApiOneProduct);
 
     app.put('/api/products/:id', checkToken);
     app.put('/api/products/:id', serveApiUpdateOneProduct);
-
-    app.get('/api/products/:id', checkToken);
-    app.get('/api/products/:id', serveApiCreateOneProduct);
-
 
     app.use('/public', express.static('public'));
     app.use(serveNotFound);
@@ -142,16 +143,14 @@ function serveApiBcrypt(req, res) {
  * @param res Response
  */
 function serveApiLogin(req, res) {
-    const email = req.query.email;
-    const password = req.query.password;
-
+    const email = req.body.login;
+    const password = req.body.password;
+    console.log(email);
+    console.log(password);
     DBService.getUserByEmail(email).then(function (user) {
         console.log(user);
-        if (!user) {
-            throw 'No user';
-        }
-        if (!bcrypt.compareSync(password, user.password)) {
-            throw 'Incorrect password';
+        if ((user == null) || (!bcrypt.compareSync(password, user.password))) {
+            throw new Error('Incorrect password');
         }
         const payload = {
             email: user.mail
@@ -160,11 +159,11 @@ function serveApiLogin(req, res) {
             expiresIn: "5m"
         });
         res.cookie('token', token, {encode: String});
-        res.write('Token received');
+        res.json({user: user.mail});
         res.end();
     }).catch(function (err) {
         res.status(HttpStatus.FORBIDDEN);
-        res.write(err);
+        res.write("Incorrect login or password");
         res.end();
     });
 }

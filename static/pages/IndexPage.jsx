@@ -10,6 +10,7 @@ import ProductListPage from "./ProductListPage.jsx";
 import NotFoundPage from "./NotFoundPage.jsx";
 import PanelProductsPage from "./PanelProductsPage.jsx";
 import PanelProductPage from "./PanelProductPage.jsx";
+import PanelLogin from "./PanelLogin.jsx";
 
 
 import {createBrowserHistory} from "history";
@@ -30,6 +31,7 @@ export default class IndexPage extends React.Component {
                 <Route path="/products/:product" component={ProductPage}/>
 
                 <Route exact path="/panel" component={PanelProductsPage}/>
+                <Route exact path="/panel/login" component={PanelLogin}/>
                 <Route exact path="/panel/product" component={PanelProductPage}/>
                 <Route path="/panel/product/:id" component={PanelProductPage}/>
 
