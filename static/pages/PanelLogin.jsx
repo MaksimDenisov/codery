@@ -1,5 +1,8 @@
 import React from "react";
 
+const Cookie = require('cookie');
+const jwt = require('jsonwebtoken');
+
 export default class PanelLogin extends React.Component {
 
     constructor(props) {
@@ -10,13 +13,26 @@ export default class PanelLogin extends React.Component {
                 login: "",
                 password: ""
             }
+        };
+        try {
+            const cookies = Cookie.parse(document.cookie);
+            const payload = jwt.decode(cookies.token);
+            const timestampInSeconds = new Date().getTime() * 1000;
+            if (payload.exp < timestampInSeconds) {
+                this.state.status = 'logged';
+            }
+        } catch (err) {
         }
     }
+
 
     render() {
         return <React.Fragment>
             {
                 this.state.status !== "logged" && this.renderForm()
+            }
+            {
+                this.state.status === "logged" && this.renderLogout()
             }
             {
                 this.state.status !== "idle" && this.renderAlert(this.state.status)
@@ -49,6 +65,14 @@ export default class PanelLogin extends React.Component {
         </form>
     }
 
+    renderLogout() {
+        return <button className="btn btn-danger font-weight-bold mt-3"
+                       onClick={this.logout.bind(this)}>
+            Logout
+        </button>
+    }
+
+
     onSave(event) {
         event.preventDefault();
         this.state.status = "pending";
@@ -74,6 +98,12 @@ export default class PanelLogin extends React.Component {
             this.forceUpdate();
         }.bind(this));
 
+    }
+
+    logout() {
+        document.cookie = 'token=; Path=/; Max-Age=0;';
+        this.state.status = "idle";
+        this.forceUpdate();
     }
 
     onChange(event) {
