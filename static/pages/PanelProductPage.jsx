@@ -12,17 +12,20 @@ export default class ProductPage extends React.Component {
     }
 
     componentDidMount() {
-        fetch("/api/products/" + this.props.match.params.id,{
+        fetch("/api/products/" + this.props.match.params.id, {
             method: "GET",
             credentials: "same-origin"
         })
             .then(function (response) {
                 console.log(response.status);
-                if (response.status != 200) {
+                if (response.status === 401 || response.status === 403) {
+                    this.gotoLoginPage();
+                }
+                if (response.status !== 200) {
                     throw new Error("Error!");
                 }
                 return response.json();
-            })
+            }.bind(this))
             .then(function (json) {
                 console.log(json);
                 this.setState({
@@ -127,7 +130,10 @@ export default class ProductPage extends React.Component {
                 "Content-Type": "application/json"
             }
         })
-            .then(function (result) {
+            .then(function (response) {
+                if (response.status === 401 || response.status === 403) {
+                    this.gotoLoginPage();
+                }
                 this.setState({
                     status: 'saved'
                 })
@@ -143,5 +149,9 @@ export default class ProductPage extends React.Component {
         const name = event.target.name;
         this.state.product[name] = event.target.value;
         this.forceUpdate();
+    }
+
+    gotoLoginPage() {
+        window.location = "/panel/login";
     }
 }

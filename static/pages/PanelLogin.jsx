@@ -17,8 +17,9 @@ export default class PanelLogin extends React.Component {
         try {
             const cookies = Cookie.parse(document.cookie);
             const payload = jwt.decode(cookies.token);
-            const timestampInSeconds = new Date().getTime() * 1000;
-            if (payload.exp < timestampInSeconds) {
+            const timestampInSeconds = new Date().getTime();
+            if ((payload.exp * 1000) > timestampInSeconds) {
+                console.log("Протух");
                 this.state.status = 'logged';
             }
         } catch (err) {

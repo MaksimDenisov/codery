@@ -29,7 +29,10 @@ export default class ProductListPage extends React.Component {
         })
             .then(function (response) {
                 console.log(response.status);
-                if (response.status != 200) {
+                if (response.status === 401 || response.status === 403) {
+                    this.gotoLoginPage();
+                }
+                if (response.status !== 200) {
                     throw new Error("Error!");
                 }
                 return response.json();
@@ -133,6 +136,9 @@ export default class ProductListPage extends React.Component {
                 "Content-Type": "application/json"
             }
         }).then(function (response) {
+            if (response.status === 401 || response.status === 403) {
+                this.gotoLoginPage();
+            }
             if (response.status !== 200) {
                 throw new Error("Error!");
             }
@@ -189,5 +195,9 @@ export default class ProductListPage extends React.Component {
         return <div className={className} role="alert">
             {message}
         </div>;
+    }
+
+    gotoLoginPage() {
+        window.location = "/panel/login";
     }
 }
