@@ -1,5 +1,6 @@
 import React from "react";
 import {Link} from "react-router-dom";
+import Alert from "../components/Alert.jsx";
 
 const messages = require('../config/Messages.js');
 const HttpStatus = require('../config/HttpStatus.js');
@@ -47,9 +48,7 @@ export default class ProductListPage extends React.Component {
                     }
                 </div>
             </main>
-            {
-                this.renderAlert(this.state.status)
-            }
+            <Alert status={this.state.status}/>
         </React.Fragment>;
     }
 
@@ -68,25 +67,5 @@ export default class ProductListPage extends React.Component {
                 </div>
             </div>;
         });
-    }
-
-    renderAlert(status) {
-        let className;
-        let message;
-        switch (status) {
-            case 'ready':
-                className = "alert alert-primary";
-                message = messages.alert.READY;
-                break;
-            case 'error':
-                className = "alert alert-danger";
-                message = messages.alert.ERROR;
-                break;
-            default:
-                return false;
-        }
-        return <div className={className} role="alert">
-            {message}
-        </div>;
     }
 }

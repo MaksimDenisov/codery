@@ -1,4 +1,5 @@
 import React from "react";
+import Alert from "../components/Alert.jsx";
 
 const Cookie = require('cookie');
 const jwt = require('jsonwebtoken');
@@ -27,7 +28,6 @@ export default class PanelLogin extends React.Component {
         }
     }
 
-
     render() {
         return <React.Fragment>
             {
@@ -36,10 +36,7 @@ export default class PanelLogin extends React.Component {
             {
                 this.state.status === "logged" && this.renderLogout()
             }
-            {
-                this.state.status !== "idle" && this.renderAlert(this.state.status)
-
-            }
+            <Alert status={this.state.status} successStatus='logged' successMessage={messages.login.LOGIN_SUCCESS}/>
         </React.Fragment>;
     }
 
@@ -111,30 +108,6 @@ export default class PanelLogin extends React.Component {
         const name = event.target.name;
         this.state.credentials[name] = event.target.value;
         this.forceUpdate();
-    }
-
-    renderAlert(status) {
-        let className;
-        let message;
-        switch (status) {
-            case 'pending':
-                className = "alert alert-primary";
-                message = messages.login.SENDING_CREDENTIALS;
-                break;
-            case 'error':
-                className = "alert alert-danger";
-                message = messages.common.INCORRECT_LOGIN_OR_PASSWORD;
-                break;
-            case 'logged':
-                className = "alert alert-success";
-                message = messages.login.LOGIN_SUCCESS;
-                break;
-            default:
-                return false;
-        }
-        return <div className={className} role="alert">
-            {message}
-        </div>;
     }
 }
 

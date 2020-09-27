@@ -1,6 +1,7 @@
 import React from "react";
 import ProductBox from "../components/ProductBox.jsx";
 import Redirect from "react-router-dom/es/Redirect";
+import Alert from "../components/Alert.jsx";
 
 const messages = require('../config/Messages.js');
 const HttpStatus = require('../config/HttpStatus.js');
@@ -52,9 +53,7 @@ export default class ProductPage extends React.Component {
                     this.state.product && this.renderProduct()
                 }
             </div>
-            {
-                this.renderAlert(this.state.status)
-            }
+            <Alert status={this.state.status}/>
         </React.Fragment>;
     }
 
@@ -84,25 +83,5 @@ export default class ProductPage extends React.Component {
 
     renderRedirect() {
         return <Redirect to={this.state.redirect}/>
-    }
-
-    renderAlert(status) {
-        let className;
-        let message;
-        switch (status) {
-            case 'ready':
-                className = "alert alert-primary";
-                message = messages.alert.READY;
-                break;
-            case 'error':
-                className = "alert alert-danger";
-                message = messages.alert.ERROR;
-                break;
-            default:
-                return false;
-        }
-        return <div className={className} role="alert">
-            {message}
-        </div>;
     }
 }

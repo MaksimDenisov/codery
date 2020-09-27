@@ -1,5 +1,6 @@
 import React from "react";
 import ProductBox from "../components/ProductBox.jsx";
+import Alert from "../components/Alert.jsx";
 
 const messages = require('../config/Messages.js');
 const HttpStatus = require('../config/HttpStatus.js');
@@ -49,44 +50,17 @@ export default class ProductPage extends React.Component {
                     this.state.product && this.renderProduct()
                 }
             </div>
-            {
-                this.renderAlert(this.state.status)
-            }
+            <Alert status={this.state.status}/>
         </React.Fragment>;
     }
 
     renderProduct() {
-        console.log("renderProduct");
         return <ProductBox tabs={["Каталог", "Вентиляция", "ПВУ"]}
                            title={this.state.product.title}
                            image={'/public/' + this.state.product.img}>
 
             {this.state.product && this.renderForm()}
         </ProductBox>
-    }
-
-    renderAlert(status) {
-        let className;
-        let message;
-        switch (status) {
-            case 'ready':
-                className = "alert alert-primary";
-                message = messages.alert.READY;
-                break;
-            case 'error':
-                className = "alert alert-danger";
-                message = messages.alert.ERROR;
-                break;
-            case 'saved':
-                className = "alert  alert-success";
-                message = messages.alert.SAVED;
-                break;
-            default:
-                return false;
-        }
-        return <div className={className} role="alert">
-            {message}
-        </div>;
     }
 
     renderForm() {
