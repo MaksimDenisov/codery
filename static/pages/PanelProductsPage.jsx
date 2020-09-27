@@ -1,6 +1,8 @@
 import React from "react";
 import {Link} from "react-router-dom";
 
+const messages = require('../config/Messages.js');
+const HttpStatus = require('../config/HttpStatus.js');
 /**
  * Page shows list of product.
  */
@@ -29,11 +31,11 @@ export default class ProductListPage extends React.Component {
         })
             .then(function (response) {
                 console.log(response.status);
-                if (response.status === 401 || response.status === 403) {
+                if (response.status === HttpStatus.UNAUTHORIZED || response.status === HttpStatus.FORBIDDEN) {
                     this.gotoLoginPage();
                 }
                 if (response.status !== 200) {
-                    throw new Error("Error!");
+                    throw new Error(messages.alert.ERROR);
                 }
                 return response.json();
             })
@@ -70,7 +72,7 @@ export default class ProductListPage extends React.Component {
 
     renderProducts() {
         return this.state.products.map((item, index) => {
-            return <div className={'col-5 col-sm-4 mt-3' + ((index % 2 == 0) ? ' offset-1 offset-sm-2' : '')}>
+            return <div className={'col-5 col-sm-4 mt-3' + ((index % 2 === 0) ? ' offset-1 offset-sm-2' : '')}>
                 <div className="row">
                     <h3>{item.title}</h3>
                     <img className="col-6 offset-3 img-fluid" src={'/public/' + item.img}/>
@@ -78,7 +80,7 @@ export default class ProductListPage extends React.Component {
                 <div className="row mt-3 mb-3">
                     <div className="col-3 offset-3  pl-0">
                         <Link className="btn btn-primary font-weight-bold"
-                              to={'/panel/product/' + item._id}>Заказать</Link>
+                              to={'/panel/product/' + item._id}>{messages.products.BUTTON_ORDER} </Link>
                     </div>
                 </div>
             </div>;
@@ -90,27 +92,27 @@ export default class ProductListPage extends React.Component {
         return <form>
             <div className="row mt-3">
                 <div className='col-5 col-sm-4 mt-3  offset-1 offset-sm-2'>
-                    <label htmlFor="title">Название:</label>
+                    <label htmlFor="title">{messages.products.TITLE_NAME} </label>
                     <input className="form-control" id="title"
                            name="title"
                            onChange={this.onChange.bind(this)}
                            value={this.state.newProduct.title}/>
 
-                    <label htmlFor="description">Описание:</label>
+                    <label htmlFor="description">{messages.products.TITLE_DESCRIPTION} </label>
                     <textarea className="form-control" rows="5" id="description"
                               name="description"
                               onChange={this.onChange.bind(this)}
                               value={this.state.newProduct.description}/>
                 </div>
                 <div className='col-5 col-sm-4 mt-3'>
-                    <label htmlFor="key">Key:</label>
+                    <label htmlFor="key">{messages.products.TITLE_KEY} </label>
                     <input className="form-control" id="key"
                            name="key"
                            type="number"
                            onChange={this.onChange.bind(this)}
                            value={this.state.newProduct.key}/>
 
-                    <label htmlFor="slug">Slug:</label>
+                    <label htmlFor="slug">{messages.products.TITLE_KEY} </label>
                     <input className="form-control" id="slug"
                            name="slug"
                            onChange={this.onChange.bind(this)}
@@ -118,7 +120,7 @@ export default class ProductListPage extends React.Component {
 
                     <button className="btn btn-danger font-weight-bold mt-3"
                             onClick={this.onSave.bind(this)}>
-                        Сохранить
+                        {messages.products.BUTTON_SAVE}
                     </button>
                 </div>
             </div>
@@ -136,11 +138,11 @@ export default class ProductListPage extends React.Component {
                 "Content-Type": "application/json"
             }
         }).then(function (response) {
-            if (response.status === 401 || response.status === 403) {
+            if (response.status === HttpStatus.UNAUTHORIZED || response.status === HttpStatus.FORBIDDEN) {
                 this.gotoLoginPage();
             }
-            if (response.status !== 200) {
-                throw new Error("Error!");
+            if (response.status !== HttpStatus.OK) {
+                throw new Error(messages.alert.ERROR);
             }
             return response.json();
         })
@@ -179,15 +181,15 @@ export default class ProductListPage extends React.Component {
         switch (status) {
             case 'ready':
                 className = "alert alert-primary";
-                message = 'Success';
+                message = messages.alert.READY;
                 break;
             case 'error':
                 className = "alert alert-danger";
-                message = 'Error';
+                message = messages.alert.ERROR;
                 break;
             case 'saved':
                 className = "alert  alert-success";
-                message = 'Saved';
+                message = messages.alert.SAVED;
                 break;
             default:
                 return false;

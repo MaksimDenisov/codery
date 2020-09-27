@@ -1,6 +1,8 @@
 import React from "react";
 import {Link} from "react-router-dom";
 
+const messages = require('../config/Messages.js');
+const HttpStatus = require('../config/HttpStatus.js');
 /**
  * Page shows list of product.
  */
@@ -18,7 +20,7 @@ export default class ProductListPage extends React.Component {
         fetch("/api/products")
             .then(function (response) {
                 console.log(response.status);
-                if (response.status != 200) {
+                if (response.status !== HttpStatus.OK) {
                     throw new Error("Error!");
                 }
                 return response.json();
@@ -30,7 +32,6 @@ export default class ProductListPage extends React.Component {
                 });
             }.bind(this))
             .catch(function (ex) {
-                console.log("Error in catch");
                 this.setState({
                     status: 'error'
                 });
@@ -54,7 +55,7 @@ export default class ProductListPage extends React.Component {
 
     renderProducts() {
         return this.state.products.map((item, index) => {
-            return <div className={'col-5 col-sm-4 mt-3' + ((index % 2 == 0) ? ' offset-1 offset-sm-2' : '')}>
+            return <div className={'col-5 col-sm-4 mt-3' + ((index % 2 === 0) ? ' offset-1 offset-sm-2' : '')}>
                 <div className="row">
                     <h3>{item.title}</h3>
                     <img className="col-6 offset-3 img-fluid" src={'/public/' + item.img}/>
@@ -62,7 +63,7 @@ export default class ProductListPage extends React.Component {
                 <div className="row mt-3 mb-3">
                     <div className="col-3 offset-3  pl-0">
                         <Link className="btn btn-primary font-weight-bold"
-                              to={'/products/' + item.key + '-' + item.slug}>Заказать</Link>
+                              to={'/products/' + item.key + '-' + item.slug}>{messages.products.BUTTON_ORDER} </Link>
                     </div>
                 </div>
             </div>;
@@ -75,11 +76,11 @@ export default class ProductListPage extends React.Component {
         switch (status) {
             case 'ready':
                 className = "alert alert-primary";
-                message = 'Success';
+                message = messages.alert.READY;
                 break;
             case 'error':
                 className = "alert alert-danger";
-                message = 'Error';
+                message = messages.alert.ERROR;
                 break;
             default:
                 return false;

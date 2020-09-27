@@ -2,6 +2,8 @@ import React from "react";
 import ProductBox from "../components/ProductBox.jsx";
 import Redirect from "react-router-dom/es/Redirect";
 
+const messages = require('../config/Messages.js');
+const HttpStatus = require('../config/HttpStatus.js');
 /**
  * Page shows detail information of product.
  */
@@ -16,16 +18,14 @@ export default class ProductPage extends React.Component {
         const keyAndSlug = this.parseKeyAndSlug(this.props.match.params.product);
         fetch("/api/products?key=" + keyAndSlug.key)
             .then(function (response) {
-                console.log(response.status);
-                if (response.status != 200) {
-                    throw new Error("Error!");
+                if (response.status !== HttpStatus.OK) {
+                    throw new Error(messages.alert.ERROR);
                 }
                 return response.json();
             })
             .then(function (json) {
-                console.log(json);
                 const slug = json[0].slug;
-                if (slug != keyAndSlug.slug) {
+                if (slug !== keyAndSlug.slug) {
                     this.setState({
                         redirect: json[0].key + '-' + json[0].slug
                     });
@@ -92,11 +92,11 @@ export default class ProductPage extends React.Component {
         switch (status) {
             case 'ready':
                 className = "alert alert-primary";
-                message = 'Success';
+                message = messages.alert.READY;
                 break;
             case 'error':
                 className = "alert alert-danger";
-                message = 'Error';
+                message = messages.alert.ERROR;
                 break;
             default:
                 return false;

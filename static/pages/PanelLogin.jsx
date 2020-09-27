@@ -2,6 +2,8 @@ import React from "react";
 
 const Cookie = require('cookie');
 const jwt = require('jsonwebtoken');
+const messages = require('../config/Messages.js');
+const HttpStatus = require('../config/HttpStatus.js');
 
 export default class PanelLogin extends React.Component {
 
@@ -45,20 +47,20 @@ export default class PanelLogin extends React.Component {
         return <form>
             <div className="row mt-3">
                 <div className='col-5 col-sm-4 mt-3  offset-1 offset-sm-2'>
-                    <label htmlFor="title">Login:</label>
+                    <label htmlFor="title">{messages.login.LOGIN_TITLE}</label>
                     <input className="form-control" id="login"
                            name="login"
                            onChange={this.onChange.bind(this)}
                            value={this.state.credentials.login}/>
 
-                    <label htmlFor="description">Password:</label>
+                    <label htmlFor="description">{messages.login.PASSWORD_TITLE}</label>
                     <input className="form-control" id="password" type="password"
                            name="password"
                            onChange={this.onChange.bind(this)}
                            value={this.state.credentials.password}/>
                     <button className="btn btn-danger font-weight-bold mt-3"
                             onClick={this.onSave.bind(this)}>
-                        Login
+                        {messages.login.LOGIN_BUTTON}
                     </button>
                 </div>
             </div>
@@ -68,10 +70,9 @@ export default class PanelLogin extends React.Component {
     renderLogout() {
         return <button className="btn btn-danger font-weight-bold mt-3"
                        onClick={this.logout.bind(this)}>
-            Logout
+            {messages.login.LOGOUT_BUTTON}
         </button>
     }
-
 
     onSave(event) {
         event.preventDefault();
@@ -86,10 +87,10 @@ export default class PanelLogin extends React.Component {
             }
         }).then(function (response) {
             console.log(response);
-            if (response.status === 200) {
+            if (response.status === HttpStatus.OK) {
                 this.state.status = "logged";
             }
-            if (response.status === 403) {
+            if (response.status === HttpStatus.FORBIDDEN) {
                 this.state.status = "error";
             }
             this.forceUpdate();
@@ -118,15 +119,15 @@ export default class PanelLogin extends React.Component {
         switch (status) {
             case 'pending':
                 className = "alert alert-primary";
-                message = 'Sending credentials';
+                message = messages.login.SENDING_CREDENTIALS;
                 break;
             case 'error':
                 className = "alert alert-danger";
-                message = 'Error';
+                message = messages.common.INCORRECT_LOGIN_OR_PASSWORD;
                 break;
             case 'logged':
                 className = "alert alert-success";
-                message = 'Logged';
+                message = messages.login.LOGIN_SUCCESS;
                 break;
             default:
                 return false;

@@ -1,6 +1,9 @@
 import React from "react";
 import ProductBox from "../components/ProductBox.jsx";
 
+const messages = require('../config/Messages.js');
+const HttpStatus = require('../config/HttpStatus.js');
+
 /**
  * Page shows detail information of product.
  */
@@ -27,7 +30,6 @@ export default class ProductPage extends React.Component {
                 return response.json();
             }.bind(this))
             .then(function (json) {
-                console.log(json);
                 this.setState({
                     product: json,
                     status: 'ready'
@@ -69,15 +71,15 @@ export default class ProductPage extends React.Component {
         switch (status) {
             case 'ready':
                 className = "alert alert-primary";
-                message = 'Success';
+                message = messages.alert.READY;
                 break;
             case 'error':
                 className = "alert alert-danger";
-                message = 'Error';
+                message = messages.alert.ERROR;
                 break;
             case 'saved':
                 className = "alert  alert-success";
-                message = 'Saved';
+                message = messages.alert.SAVED;
                 break;
             default:
                 return false;
@@ -89,25 +91,26 @@ export default class ProductPage extends React.Component {
 
     renderForm() {
         return <form>
-            <label htmlFor="title">Название:</label>
+            <label htmlFor="title">{messages.products.TITLE_NAME} </label>
             <input className="form-control" id="title"
                    name="title"
                    onChange={this.onChange.bind(this)}
                    value={this.state.product.title}/>
 
-            <label htmlFor="description">Описание:</label>
+            <label htmlFor="description">{messages.products.TITLE_DESCRIPTION}</label>
             <textarea className="form-control" rows="5" id="description"
+                      name="description"
                       onChange={this.onChange.bind(this)}
                       value={this.state.product.description}/>
 
-            <label htmlFor="key">Key:</label>
+            <label htmlFor="key">{messages.products.TITLE_KEY}</label>
             <input className="form-control" id="key"
                    name="key"
                    type="number"
                    onChange={this.onChange.bind(this)}
                    value={this.state.product.key}/>
 
-            <label htmlFor="slug">Slug:</label>
+            <label htmlFor="slug">{messages.products.TITLE_SLUG}</label>
             <input className="form-control" id="slug"
                    name="slug"
                    onChange={this.onChange.bind(this)}
@@ -115,7 +118,7 @@ export default class ProductPage extends React.Component {
 
             <button className="btn btn-danger font-weight-bold"
                     onClick={this.onSave.bind(this)}>
-                Сохранить
+                {messages.products.BUTTON_SAVE}
             </button>
         </form>;
     }
@@ -131,7 +134,7 @@ export default class ProductPage extends React.Component {
             }
         })
             .then(function (response) {
-                if (response.status === 401 || response.status === 403) {
+                if (response.status === HttpStatus.UNAUTHORIZED || response.status === HttpStatus.FORBIDDEN) {
                     this.gotoLoginPage();
                 }
                 this.setState({
