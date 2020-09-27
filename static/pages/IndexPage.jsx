@@ -7,7 +7,7 @@ import PanelAppBarComponent from "../components/PanelAppBarComponent.jsx";
 
 import ProductPage from "./ProductPage.jsx";
 import ProductListPage from "./ProductListPage.jsx";
-import NotFoundPage from "./NotFoundPage.jsx";
+import NotFoundPage from "../NotFoundPage.jsx";
 import PanelProductsPage from "./PanelProductsPage.jsx";
 import PanelProductPage from "./PanelProductPage.jsx";
 import PanelLogin from "./PanelLogin.jsx";

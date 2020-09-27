@@ -1,0 +1,9 @@
+module.exports = {
+    OK: 200,
+    REDIRECT: 301,
+    UNAUTHORIZED: 401,
+    FORBIDDEN: 403,
+    NOT_FOUND: 404,
+    SERVER_ERROR: 500,
+    NOT_IMPLEMENTED: 501
+};

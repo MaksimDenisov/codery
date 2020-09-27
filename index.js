@@ -8,33 +8,11 @@ const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-const saltRounds = 10;
-
 const DBService = require('./DBService');
 
-const conf = {
-    PORT: 3000
-};
-
-const messages = {
-    COUNTER_RESET: 'Счетчик сброшен',
-    PRODUCT_NOT_FOUND: 'Введенный вами товар не найден.',
-    PAGE_NOT_FOUND: 'Введенная вами страница на сайте не обнаружена.',
-    SERVER_ERROR: 'Ошибка сервера',
-    UNAUTHORIZED: 'Не авторизован'
-};
-
-const HttpStatus = {
-    OK: 200,
-    REDIRECT: 301,
-    UNAUTHORIZED: 401,
-    FORBIDDEN: 403,
-    NOT_FOUND: 404,
-    SERVER_ERROR: 500,
-    NOT_IMPLEMENTED: 501
-};
-
-const SECRET = "zxcvbnmasdfghjklqwertyuiop";
+const messages = require('./static/config/Messages.js');
+const HttpStatus = require('./static/config/HttpStatus.js');
+const conf = require('./config.js');
 
 
 function startServer() {
@@ -44,9 +22,6 @@ function startServer() {
 
     app.get('/', serveSPA);
     app.get('/products/:key_and_slug', serveSPA);
-
-    app.get('/login', serveLogin);
-    app.get('/login2', serveLogin2);
 
     app.get('/panel', serveSPA);
     app.get('/panel/login', serveSPA);
@@ -93,49 +68,21 @@ function serveSPA(req, res) {
 }
 
 /*
- * Handles Product Api  requests
+ * Handles Api  requests
  */
 
 /**
- * Login function
- * must set cookie
- * @param req Request
- * @param res Response
- */
-function serveLogin(req, res) {
-    const payload = {
-        email: "user@mail.com"
-    };
-    const token = jwt.sign(payload, SECRET, {
-        expiresIn: "5m"
-    });
-    res.cookie('token', token, {encode: String});
-    res.end();
-}
-
-/**
- * Login function
- * must set cookie by express
- * @param req Request
- * @param res Response
- */
-function serveLogin2(req, res) {
-    res.cookie('user', 'user2@mail.com', {encode: String});
-    res.end();
-}
-
-/**
- * Get bcrypt string
- * @param req Request
- * @param res Response
+ * SERVICE TEST FUNCTION
+ * Get encrypted string from password
+ * @param req Request Need contain "query" param
+ * @param res Response encrypted string
  */
 function serveApiBcrypt(req, res) {
     const password = req.query.password;
     res.status(HttpStatus.OK);
-    res.write(bcrypt.hashSync(password, saltRounds));
+    res.write(bcrypt.hashSync(password, conf.SALT_ROUNDS));
     res.end();
 }
-
 
 /**
  * Login API function
@@ -145,45 +92,48 @@ function serveApiBcrypt(req, res) {
 function serveApiLogin(req, res) {
     const email = req.body.login;
     const password = req.body.password;
-    console.log(email);
-    console.log(password);
     DBService.getUserByEmail(email).then(function (user) {
-        console.log(user);
         if ((user == null) || (!bcrypt.compareSync(password, user.password))) {
-            throw new Error('Incorrect password');
+            throw new Error(messages.common.INCORRECT_LOGIN_OR_PASSWORD);
         }
         const payload = {
             email: user.mail
         };
-        const token = jwt.sign(payload, SECRET, {
-            expiresIn: "5m"
+        const token = jwt.sign(payload, conf.SECRET_KEY, {
+            expiresIn: conf.EXPIRED_TIME
         });
+        console.log('Login user with mail :' + email);
         res.cookie('token', token, {encode: String});
         res.json({user: user.mail});
         res.end();
     }).catch(function (err) {
+        console.log('Access denied for user with mail :' + email);
         res.status(HttpStatus.FORBIDDEN);
-        res.write("Incorrect login or password");
+        res.write(messages.common.INCORRECT_LOGIN_OR_PASSWORD);
         res.end();
     });
 }
 
-
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
 function checkToken(req, res, next) {
     try {
-        const payload = jwt.verify(req.cookies.token, SECRET);
-        console.log(payload);
+        const payload = jwt.verify(req.cookies.token, conf.SECRET_KEY);
         req.user = {mail: payload.email};
         next();
     } catch (err) {
         res.status(HttpStatus.UNAUTHORIZED);
-        res.write(messages.UNAUTHORIZED);
+        res.write(messages.common.UNAUTHORIZED);
         res.end();
     }
 }
 
 /**
- * Return cookie.
+ * Return user mail.
  * @param req Request
  * @param res Response
  */
@@ -216,7 +166,7 @@ function serveApiOneProduct(req, res) {
         if (product) {
             res.json(product);
         } else {
-            res.send({error: 'Not found'});
+            res.send({error: messages.common.PRODUCT_NOT_FOUND});
         }
     }).catch(function (err) {
         serveInternalError(req, res, err.message);
