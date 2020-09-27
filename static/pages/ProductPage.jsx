@@ -60,7 +60,8 @@ export default class ProductPage extends React.Component {
     renderProduct() {
         return <ProductBox tabs={["Каталог", "Вентиляция", "ПВУ"]}
                            title={this.state.product.title}
-                           image={'../public/' + this.state.product.img}>
+                           image={'../public/' + this.state.product.img}
+                           buttonText={messages.products.BUTTON_ORDER}>
             {this.state.product.description}
         </ProductBox>
     }

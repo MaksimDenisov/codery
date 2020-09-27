@@ -35,7 +35,7 @@ export default class ProductBox extends React.Component {
                         </div>
                         <div className="row mt-3 mb-3">
                             <div className="col-3 offset-3  pl-0">
-                                <button className="btn btn-primary font-weight-bold">Заказать</button>
+                                <button className="btn btn-primary font-weight-bold">{this.props.buttonText}</button>
                             </div>
                         </div>
                     </div>

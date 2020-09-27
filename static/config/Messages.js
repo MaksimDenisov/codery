@@ -30,6 +30,7 @@ module.exports = {
         TITLE_KEY:'Key:',
         TITLE_SLUG:'Slug:',
         BUTTON_SAVE:'Сохранить',
-        BUTTON_ORDER: 'Заказать'
+        BUTTON_ORDER: 'Заказать',
+        EDIT: 'Редактировать'
     }
 };
