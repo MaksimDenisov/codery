@@ -153,6 +153,10 @@ function serveApiMe(req, res) {
 function serveApiProducts(req, res) {
     DBService.getProducts(req.query).then(function (products) {
         res.json(products);
+    }).catch(function (err) {
+        res.status(HttpStatus.NOT_FOUND);
+        res.write(messages.common.PRODUCT_NOT_FOUND);
+        res.end();
     });
 }
 
@@ -179,6 +183,7 @@ function serveApiOneProduct(req, res) {
  * @param res
  */
 function serveApiCreateOneProduct(req, res) {
+    req.body.key = Number(req.body.key);
     DBService.createProduct(req.body)
         .then(function (result) {
             const insertedItem = result.ops[0];
@@ -192,6 +197,7 @@ function serveApiCreateOneProduct(req, res) {
  * @param res
  */
 function serveApiUpdateOneProduct(req, res) {
+    req.body.key = Number(req.body.key);
     DBService.updateProduct(req.params.id, req.body)
         .then(function (result) {
             res.json(result);
